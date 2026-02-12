@@ -57,4 +57,4 @@ This project is licensed under the MIT License.
 
 ## Contact
 
-For support or inquiries, please reach out to the development team.
+For support or inquiries, please reach out to the development team.today is thursday
