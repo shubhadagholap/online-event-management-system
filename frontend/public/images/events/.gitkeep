@@ -1,0 +1,11 @@
+# Event Images Directory
+
+Place your event images here.
+
+Recommended specifications:
+- Format: JPG, PNG, or WebP
+- Dimensions: 800x400px (2:1 aspect ratio)
+- File size: < 500KB for optimal loading
+- Naming: Use descriptive names (e.g., rock-festival.jpg, tech-summit-2026.jpg)
+
+Default fallback image: default-event.jpg
