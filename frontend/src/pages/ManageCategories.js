@@ -8,6 +8,7 @@ const ManageCategories = () => {
   const [editingCategory, setEditingCategory] = useState(null);
   const [formData, setFormData] = useState({ name: '', description: '' });
   const [message, setMessage] = useState({ type: '', text: '' });
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     fetchCategories();
@@ -15,7 +16,8 @@ const ManageCategories = () => {
 
   const fetchCategories = async () => {
     try {
-      const response = await categoriesAPI.getAll();
+      const params = { search: searchTerm };
+      const response = await categoriesAPI.getAll({ params });
       setCategories(response.data);
     } catch (error) {
       console.error('Error fetching categories:', error);
@@ -65,10 +67,26 @@ const ManageCategories = () => {
 
   return (
     <Container className="mt-4 mb-5">
-      <div className="d-flex justify-content-between align-items-center mb-4">
+      <div className="d-flex justify-content-between align-items-center mb-4 flex-column flex-md-row">
         <h2>Manage Categories</h2>
         <Button variant="primary" onClick={handleAdd}>Add Category</Button>
       </div>
+
+<div className="d-flex justify-content-between mb-3 flex-column flex-md-row">
+          <Form.Control
+            type="text"
+            placeholder="Search categories..."
+            className="mb-2 mb-md-0"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <Button variant="outline-secondary" size="sm" onClick={() => {
+            const params = new URLSearchParams({ search: searchTerm });
+            window.location = `/api/categories/export?${params.toString()}`;
+          }}>
+            Export CSV
+          </Button>
+        </div>
 
       {message.text && (
         <Alert variant={message.type} onClose={() => setMessage({ type: '', text: '' })} dismissible>
@@ -86,7 +104,12 @@ const ManageCategories = () => {
           </tr>
         </thead>
         <tbody>
-          {categories.map((category) => (
+          {categories
+            .filter(cat =>
+              cat.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+              (cat.description || '').toLowerCase().includes(searchTerm.toLowerCase())
+            )
+            .map((category) => (
             <tr key={category.id}>
               <td>{category.id}</td>
               <td>{category.name}</td>

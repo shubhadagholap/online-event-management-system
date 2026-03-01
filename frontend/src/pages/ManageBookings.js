@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Container, Table, Badge, Button, Modal, Form, Alert, Row, Col, Card } from 'react-bootstrap';
 import { bookingsAPI } from '../services/api';
+import { AuthContext } from '../context/AuthContext';
 
 const ManageBookings = () => {
   const [bookings, setBookings] = useState([]);
@@ -16,19 +17,38 @@ const ManageBookings = () => {
     cancelled: 0,
     revenue: 0
   });
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [paymentFilter, setPaymentFilter] = useState('all');
+  const { user } = useContext(AuthContext);
 
   useEffect(() => {
     fetchBookings();
-  }, []);
+  }, [user]);
 
   const fetchBookings = async () => {
     try {
-      const response = await bookingsAPI.getOrganizerBookings();
+      let response;
+      // Admin sees all bookings, organizers see only their bookings
+      if (user && user.role === 'admin') {
+        const params = {
+          search: searchTerm,
+          status: statusFilter,
+          payment: paymentFilter
+        };
+        response = await bookingsAPI.getAll({ params });
+      } else {
+        response = await bookingsAPI.getOrganizerBookings();
+      }
       setBookings(response.data);
       calculateStats(response.data);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching bookings:', error);
+      setMessage({ 
+        type: 'danger', 
+        text: 'Failed to load bookings. Please try again.' 
+      });
       setLoading(false);
     }
   };
@@ -100,7 +120,14 @@ const ManageBookings = () => {
 
   return (
     <Container className="mt-4 mb-5">
-      <h2 className="mb-4">Manage Bookings</h2>
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h2>
+          {user && user.role === 'admin' ? 'All Bookings' : 'My Bookings'}
+        </h2>
+        {user && user.role === 'admin' && (
+          <Badge bg="info" className="fs-6">Admin View</Badge>
+        )}
+      </div>
 
       {/* Stats Cards */}
       <Row className="mb-4">
@@ -144,6 +171,48 @@ const ManageBookings = () => {
         </Alert>
       )}
 
+      {/* search + filters */}
+      <Row className="mb-3 align-items-center">
+        <Col md={4} className="mb-2">
+          <Form.Control
+            type="text"
+            placeholder="Search bookings..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </Col>
+        <Col md={3} className="mb-2">
+          <Form.Select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+          >
+            <option value="all">All Statuses</option>
+            <option value="confirmed">Confirmed</option>
+            <option value="pending">Pending</option>
+            <option value="cancelled">Cancelled</option>
+          </Form.Select>
+        </Col>
+        <Col md={3} className="mb-2">
+          <Form.Select
+            value={paymentFilter}
+            onChange={(e) => setPaymentFilter(e.target.value)}
+          >
+            <option value="all">All Payments</option>
+            <option value="paid">Paid</option>
+            <option value="pending">Pending</option>
+            <option value="failed">Failed</option>
+          </Form.Select>
+        </Col>
+        <Col md={2} className="mb-2 text-end">
+          <Button variant="outline-secondary" size="sm" onClick={() => {
+            const params = new URLSearchParams({ search: searchTerm, status: statusFilter, payment: paymentFilter });
+            window.location = `/api/bookings/export?${params.toString()}`;
+          }}>
+            Export CSV
+          </Button>
+        </Col>
+      </Row>
+
       {bookings.length > 0 ? (
         <Table responsive striped bordered hover>
           <thead>
@@ -151,6 +220,7 @@ const ManageBookings = () => {
               <th>Ticket #</th>
               <th>User</th>
               <th>Event</th>
+              {user && user.role === 'admin' && <th>Organizer</th>}
               <th>Event Date</th>
               <th>Booking Date</th>
               <th>Amount</th>
@@ -160,11 +230,33 @@ const ManageBookings = () => {
             </tr>
           </thead>
           <tbody>
-            {bookings.map((booking) => (
+            {bookings
+            .filter(b => {
+              const matchesSearch =
+                b.user_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                b.event_title.toLowerCase().includes(searchTerm.toLowerCase());
+              const matchesStatus = statusFilter === 'all' || b.status === statusFilter;
+              const matchesPayment = paymentFilter === 'all' || b.payment_status === paymentFilter;
+              return matchesSearch && matchesStatus && matchesPayment;
+            })
+            .map((booking) => (
               <tr key={booking.id}>
                 <td>{booking.ticket_number || 'N/A'}</td>
-                <td>{booking.user_name}</td>
+                <td>
+                  <div>
+                    <strong>{booking.user_name}</strong>
+                    <br />
+                    <small className="text-muted">{booking.user_email}</small>
+                  </div>
+                </td>
                 <td>{booking.event_title}</td>
+                {user && user.role === 'admin' && (
+                  <td>
+                    <small className="text-muted">
+                      {booking.organizer_name || 'N/A'}
+                    </small>
+                  </td>
+                )}
                 <td>{formatDate(booking.event_date)}</td>
                 <td>{formatDate(booking.booking_date)}</td>
                 <td>${booking.total_amount}</td>

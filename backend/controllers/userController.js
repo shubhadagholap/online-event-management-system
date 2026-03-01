@@ -1,12 +1,25 @@
 const bcrypt = require('bcrypt');
 const db = require('../config/db');
 
-// Get all users (Admin only)
+// Get all users (Admin only) with optional filters
 exports.getAllUsers = async (req, res) => {
   try {
-    const [users] = await db.query(
-      'SELECT id, name, email, role, phone, created_at FROM users ORDER BY created_at DESC'
-    );
+    const { search, role } = req.query;
+    let query = 'SELECT id, name, email, role, phone, created_at FROM users WHERE 1=1';
+    const params = [];
+
+    if (search) {
+      query += ' AND (name LIKE ? OR email LIKE ?)';
+      params.push(`%${search}%`, `%${search}%`);
+    }
+    if (role && role !== 'all') {
+      query += ' AND role = ?';
+      params.push(role);
+    }
+
+    query += ' ORDER BY created_at DESC';
+
+    const [users] = await db.query(query, params);
     res.json(users);
   } catch (error) {
     console.error('Get users error:', error);
@@ -103,6 +116,40 @@ exports.deleteUser = async (req, res) => {
     res.json({ message: 'User deleted successfully' });
   } catch (error) {
     console.error('Delete user error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Export users to CSV (Admin only)
+exports.exportUsersCSV = async (req, res) => {
+  try {
+    const { search, role } = req.query;
+    let query = 'SELECT id, name, email, role, phone, created_at FROM users WHERE 1=1';
+    const params = [];
+
+    if (search) {
+      query += ' AND (name LIKE ? OR email LIKE ?)';
+      params.push(`%${search}%`, `%${search}%`);
+    }
+    if (role && role !== 'all') {
+      query += ' AND role = ?';
+      params.push(role);
+    }
+
+    query += ' ORDER BY created_at DESC';
+    const [users] = await db.query(query, params);
+
+    const header = 'ID,Name,Email,Role,Phone,CreatedAt\n';
+    const rows = users
+      .map(u => [u.id, u.name, u.email, u.role, u.phone || '', u.created_at]
+        .map(v => `"${v}"`).join(','))
+      .join('\n');
+
+    res.setHeader('Content-Disposition', 'attachment; filename=users.csv');
+    res.setHeader('Content-Type', 'text/csv');
+    res.send(header + rows);
+  } catch (error) {
+    console.error('Export users csv error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };

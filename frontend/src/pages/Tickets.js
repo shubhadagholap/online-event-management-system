@@ -15,9 +15,10 @@ const Tickets = () => {
   const fetchTickets = async () => {
     try {
       const response = await bookingsAPI.getMyBookings();
-      // Filter only confirmed bookings as tickets
+      // Show confirmed bookings as tickets (regardless of payment status for now)
+      // In production, you might want to be more strict about payment status
       const confirmedTickets = response.data.filter(
-        booking => booking.status === 'confirmed' && booking.payment_status === 'paid'
+        booking => booking.status === 'confirmed'
       );
       setTickets(confirmedTickets);
       setLoading(false);
@@ -93,7 +94,12 @@ Please present this ticket at the venue.
                   <Card.Body>
                     <div className="d-flex justify-content-between align-items-start mb-3">
                       <Badge bg={status.variant}>{status.text}</Badge>
-                      <Badge bg="info">{ticket.ticket_number}</Badge>
+                      <div>
+                        <Badge bg="info" className="me-1">{ticket.ticket_number}</Badge>
+                        <Badge bg={ticket.payment_status === 'paid' ? 'success' : 'warning'}>
+                          {ticket.payment_status === 'paid' ? 'Paid' : 'Pending Payment'}
+                        </Badge>
+                      </div>
                     </div>
                     
                     <Card.Title className="mb-3">{ticket.event_title}</Card.Title>
@@ -158,7 +164,10 @@ Please present this ticket at the venue.
             <div className="ticket-detail">
               <div className="text-center mb-4">
                 <h3>{selectedTicket.event_title}</h3>
-                <Badge bg="success" className="mb-3">CONFIRMED</Badge>
+                <Badge bg="success" className="me-2">CONFIRMED</Badge>
+                <Badge bg={selectedTicket.payment_status === 'paid' ? 'success' : 'warning'}>
+                  {selectedTicket.payment_status === 'paid' ? 'PAID' : 'PAYMENT PENDING'}
+                </Badge>
               </div>
               
               <Row className="mb-3">
@@ -190,7 +199,11 @@ Please present this ticket at the venue.
                 </Col>
                 <Col md={6}>
                   <strong>Payment Status:</strong>
-                  <p><Badge bg="success">{selectedTicket.payment_status}</Badge></p>
+                  <p>
+                    <Badge bg={selectedTicket.payment_status === 'paid' ? 'success' : 'warning'}>
+                      {selectedTicket.payment_status === 'paid' ? 'PAID' : 'PENDING'}
+                    </Badge>
+                  </p>
                 </Col>
               </Row>
               

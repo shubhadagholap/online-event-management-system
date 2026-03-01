@@ -9,6 +9,7 @@ router.use(auth);
 router.use(roleCheck('admin'));
 
 router.get('/', userController.getAllUsers);
+router.get('/export', userController.exportUsersCSV); // CSV download
 router.get('/:id', userController.getUserById);
 router.post('/', userController.createUser);
 router.put('/:id', userController.updateUser);

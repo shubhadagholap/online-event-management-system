@@ -21,11 +21,21 @@ import ManageBookings from './pages/ManageBookings';
 import Categories from './pages/Categories';
 import AdminEvents from './pages/AdminEvents';
 import Profile from './pages/Profile';
+import Payments from './pages/Payments';
+import Notifications from './pages/Notifications';
+import Feedback from './pages/Feedback';
+import Analytics from './pages/Analytics';
+import Certificates from './pages/Certificates';
 
 function App() {
   return (
     <AuthProvider>
-      <Router>
+      <Router
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true
+        }}
+      >
         <NavigationBar />
         <Routes>
           {/* Public Routes */}
@@ -63,6 +73,46 @@ function App() {
               </ProtectedRoute>
             } 
           />
+          <Route 
+            path="/payments" 
+            element={
+              <ProtectedRoute allowedRoles={['user', 'organizer', 'admin']}>
+                <Payments />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/notifications" 
+            element={
+              <ProtectedRoute allowedRoles={['user', 'organizer', 'admin']}>
+                <Notifications />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/feedback" 
+            element={
+              <ProtectedRoute allowedRoles={['user', 'organizer', 'admin']}>
+                <Feedback />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/certificates" 
+            element={
+              <ProtectedRoute allowedRoles={['user', 'organizer', 'admin']}>
+                <Certificates />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/analytics" 
+            element={
+              <ProtectedRoute allowedRoles={['organizer', 'admin']}>
+                <Analytics />
+              </ProtectedRoute>
+            } 
+          />
 
           {/* Admin Routes */}
           <Route 
@@ -94,6 +144,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['admin']}>
                 <AdminEvents />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/bookings" 
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <ManageBookings />
               </ProtectedRoute>
             } 
           />

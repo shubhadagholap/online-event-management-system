@@ -8,6 +8,9 @@ const ManageUsers = () => {
   const [editingUser, setEditingUser] = useState(null);
   const [formData, setFormData] = useState({ name: '', email: '', role: 'user', phone: '' });
   const [message, setMessage] = useState({ type: '', text: '' });
+  const [searchTerm, setSearchTerm] = useState('');
+  const [roleFilter, setRoleFilter] = useState('all');
+  const [selectedUsers, setSelectedUsers] = useState(new Set());
 
   useEffect(() => {
     fetchUsers();
@@ -15,7 +18,11 @@ const ManageUsers = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await usersAPI.getAll();
+      const params = {
+        search: searchTerm,
+        role: roleFilter
+      };
+      const response = await usersAPI.getAll({ params });
       setUsers(response.data);
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -62,9 +69,68 @@ const ManageUsers = () => {
         </Alert>
       )}
 
+      <div className="mb-3 d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
+        <div className="mb-2">
+          <Form.Control
+            type="text"
+            placeholder="Search users..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        <div>
+          <Form.Select
+            value={roleFilter}
+            onChange={(e) => setRoleFilter(e.target.value)}
+          >
+            <option value="all">All Roles</option>
+            <option value="user">User</option>
+            <option value="organizer">Organizer</option>
+            <option value="admin">Admin</option>
+          </Form.Select>
+        </div>
+        <div className="mt-2 mt-md-0">
+          <Button variant="outline-secondary" size="sm" onClick={() => {
+            const params = new URLSearchParams({ search: searchTerm, role: roleFilter });
+            window.location = `/api/users/export?${params.toString()}`;
+          }}>
+            Export CSV
+          </Button>
+        </div>
+      </div>
+      {selectedUsers.size > 0 && (
+        <div className="mb-2">
+          <Button variant="danger" size="sm" onClick={async () => {
+            if (!window.confirm('Delete selected users?')) return;
+            try {
+              await Promise.all(Array.from(selectedUsers).map(id => usersAPI.delete(id)));
+              setMessage({ type: 'success', text: 'Selected users deleted' });
+              setSelectedUsers(new Set());
+              fetchUsers();
+            } catch (e) {
+              setMessage({ type: 'danger', text: 'Bulk delete failed' });
+            }
+          }}>
+            Delete Selected ({selectedUsers.size})
+          </Button>
+        </div>
+      )}
       <Table responsive striped bordered hover>
         <thead>
           <tr>
+            <th>
+              <Form.Check
+                type="checkbox"
+                checked={selectedUsers.size === users.length}
+                onChange={(e) => {
+                  if (e.target.checked) {
+                    setSelectedUsers(new Set(users.map(u => u.id)));
+                  } else {
+                    setSelectedUsers(new Set());
+                  }
+                }}
+              />
+            </th>
             <th>ID</th>
             <th>Name</th>
             <th>Email</th>
@@ -74,8 +140,29 @@ const ManageUsers = () => {
           </tr>
         </thead>
         <tbody>
-          {users.map((user) => (
+          {users
+            .filter(u => {
+              const matchesSearch =
+                u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                u.email.toLowerCase().includes(searchTerm.toLowerCase());
+              const matchesRole =
+                roleFilter === 'all' || u.role === roleFilter;
+              return matchesSearch && matchesRole;
+            })
+            .map((user) => (
             <tr key={user.id}>
+              <td>
+                <Form.Check
+                  type="checkbox"
+                  checked={selectedUsers.has(user.id)}
+                  onChange={(e) => {
+                    const newSet = new Set(selectedUsers);
+                    if (e.target.checked) newSet.add(user.id);
+                    else newSet.delete(user.id);
+                    setSelectedUsers(newSet);
+                  }}
+                />
+              </td>
               <td>{user.id}</td>
               <td>{user.name}</td>
               <td>{user.email}</td>

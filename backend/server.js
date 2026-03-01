@@ -5,9 +5,13 @@ require('dotenv').config();
 const app = express();
 
 // Middleware
+const path = require('path');
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Serve generated certificate PDFs
+app.use('/certificates', express.static(path.join(__dirname, 'public', 'certificates')));
 
 // Routes
 app.use('/api/auth', require('./routes/authRoutes'));
@@ -15,6 +19,21 @@ app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/categories', require('./routes/categoryRoutes'));
 app.use('/api/events', require('./routes/eventRoutes'));
 app.use('/api/bookings', require('./routes/bookingRoutes'));
+
+// Extended Event Management Routes
+app.use('/api/planning', require('./routes/planningRoutes'));
+app.use('/api/attendees', require('./routes/attendeeRoutes'));
+app.use('/api/marketing', require('./routes/marketingRoutes'));
+app.use('/api/engagement', require('./routes/engagementRoutes'));
+app.use('/api/virtual', require('./routes/virtualRoutes'));
+app.use('/api/analytics', require('./routes/analyticsRoutes'));
+app.use('/api/speakers', require('./routes/speakerRoutes'));
+
+// New Module Routes
+app.use('/api/payments', require('./routes/paymentRoutes'));
+app.use('/api/notifications', require('./routes/notificationRoutes'));
+app.use('/api/feedback', require('./routes/feedbackRoutes'));
+app.use('/api/certificates', require('./routes/certificateRoutes'));
 
 // Health check
 app.get('/api/health', (req, res) => {
