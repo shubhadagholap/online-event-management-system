@@ -9,11 +9,13 @@ router.use(auth);
 
 // User routes
 router.get('/my-bookings', bookingController.getUserBookings);
+router.get('/dashboard/stats', bookingController.getDashboardStats);
 router.post('/', bookingController.createBooking);
 router.delete('/:id/cancel', bookingController.cancelBooking);
 
 // Admin routes
 router.get('/all', roleCheck('admin'), bookingController.getAllBookings);
+router.get('/export', roleCheck('admin'), bookingController.exportBookingsCSV);
 
 // Organizer routes
 router.get('/organizer/bookings', roleCheck('organizer', 'admin'), bookingController.getOrganizerBookings);

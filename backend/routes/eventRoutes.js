@@ -6,6 +6,7 @@ const roleCheck = require('../middleware/roleCheck');
 
 // Public routes
 router.get('/', eventController.getAllEvents);
+router.get('/export', auth, roleCheck('admin'), eventController.exportEventsCSV); // admin CSV
 router.get('/:id', eventController.getEventById);
 
 // Protected routes

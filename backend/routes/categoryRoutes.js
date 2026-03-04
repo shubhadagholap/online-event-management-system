@@ -6,6 +6,7 @@ const roleCheck = require('../middleware/roleCheck');
 
 // Public routes
 router.get('/', categoryController.getAllCategories);
+router.get('/export', roleCheck('admin'), categoryController.exportCategoriesCSV);
 router.get('/:id', categoryController.getCategoryById);
 
 // Protected routes (Admin only)

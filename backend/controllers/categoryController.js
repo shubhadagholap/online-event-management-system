@@ -1,9 +1,17 @@
 const db = require('../config/db');
 
-// Get all categories
+// Get all categories with optional search
 exports.getAllCategories = async (req, res) => {
   try {
-    const [categories] = await db.query('SELECT * FROM categories ORDER BY name');
+    const { search } = req.query;
+    let query = 'SELECT * FROM categories WHERE 1=1';
+    const params = [];
+    if (search) {
+      query += ' AND (name LIKE ? OR description LIKE ?)';
+      params.push(`%${search}%`, `%${search}%`);
+    }
+    query += ' ORDER BY name';
+    const [categories] = await db.query(query, params);
     res.json(categories);
   } catch (error) {
     console.error('Get categories error:', error);
@@ -89,6 +97,29 @@ exports.deleteCategory = async (req, res) => {
     res.json({ message: 'Category deleted successfully' });
   } catch (error) {
     console.error('Delete category error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Export categories CSV (Admin only)
+exports.exportCategoriesCSV = async (req, res) => {
+  try {
+    const { search } = req.query;
+    let query = 'SELECT * FROM categories WHERE 1=1';
+    const params = [];
+    if (search) {
+      query += ' AND (name LIKE ? OR description LIKE ?)';
+      params.push(`%${search}%`, `%${search}%`);
+    }
+    query += ' ORDER BY name';
+    const [cats] = await db.query(query, params);
+    const header = 'ID,Name,Description\n';
+    const rows = cats.map(c => [c.id, c.name, c.description || ''].map(v => `"${v}"`).join(',')).join('\n');
+    res.setHeader('Content-Disposition','attachment; filename=categories.csv');
+    res.setHeader('Content-Type','text/csv');
+    res.send(header + rows);
+  } catch (err) {
+    console.error('Export categories csv error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 };

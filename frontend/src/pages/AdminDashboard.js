@@ -20,29 +20,21 @@ const AdminDashboard = () => {
 
   const fetchDashboardData = async () => {
     try {
-      // Fetch all data in parallel
-      const [eventsRes, usersRes, bookingsRes] = await Promise.all([
-        eventsAPI.getAll(),
-        usersAPI.getAll().catch(() => ({ data: [] })),
-        bookingsAPI.getAll().catch(() => ({ data: [] }))
+      // Use the new dashboard stats endpoint for better performance
+      const [statsRes, eventsRes] = await Promise.all([
+        bookingsAPI.getDashboardStats(),
+        eventsAPI.getAll()
       ]);
 
+      const stats = statsRes.data;
       const events = eventsRes.data;
-      const users = usersRes.data;
-      const bookings = bookingsRes.data;
-
-      // Calculate stats
-      const upcomingEvents = events.filter(e => e.status === 'upcoming').length;
-      const totalRevenue = bookings
-        .filter(b => b.payment_status === 'paid')
-        .reduce((sum, b) => sum + parseFloat(b.total_amount || 0), 0);
 
       setStats({
-        totalEvents: events.length,
-        upcomingEvents: upcomingEvents,
-        totalUsers: users.length,
-        totalBookings: bookings.length,
-        totalRevenue: totalRevenue
+        totalEvents: stats.totalEvents || events.length,
+        upcomingEvents: events.filter(e => e.status === 'upcoming').length,
+        totalUsers: stats.totalUsers || 0,
+        totalBookings: stats.totalBookings || 0,
+        totalRevenue: parseFloat(stats.totalRevenue) || 0
       });
 
       // Get recent events (last 5)

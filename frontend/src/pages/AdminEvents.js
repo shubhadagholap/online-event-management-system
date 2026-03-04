@@ -14,6 +14,9 @@ const AdminEvents = () => {
   });
   const [message, setMessage] = useState({ type: '', text: '' });
   const [stats, setStats] = useState({ total: 0, upcoming: 0, ongoing: 0, completed: 0 });
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [categoryFilter, setCategoryFilter] = useState('all');
 
   useEffect(() => {
     fetchEvents();
@@ -23,7 +26,12 @@ const AdminEvents = () => {
 
   const fetchEvents = async () => {
     try {
-      const response = await eventsAPI.getAll();
+      const params = {
+        search: searchTerm,
+        status: statusFilter,
+        category: categoryFilter
+      };
+      const response = await eventsAPI.getAll(params);
       setEvents(response.data);
       calculateStats(response.data);
     } catch (error) {
@@ -139,13 +147,56 @@ const AdminEvents = () => {
 
   return (
     <Container className="mt-4 mb-5">
-      <div className="d-flex justify-content-between align-items-center mb-4">
+      <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4">
         <h2>Manage All Events</h2>
-        <Button variant="primary" onClick={handleAdd}>
+        <Button variant="primary" onClick={handleAdd} className="mt-2 mt-md-0">
           <i className="bi bi-plus-circle me-2"></i>
           Create Event
         </Button>
       </div>
+
+      {/* search & filters */}
+      <Row className="mb-3 align-items-center">
+        <Col md={4} className="mb-2">
+          <Form.Control
+            type="text"
+            placeholder="Search events..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </Col>
+        <Col md={3} className="mb-2">
+          <Form.Select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+          >
+            <option value="all">All Statuses</option>
+            <option value="upcoming">Upcoming</option>
+            <option value="ongoing">Ongoing</option>
+            <option value="completed">Completed</option>
+            <option value="cancelled">Cancelled</option>
+          </Form.Select>
+        </Col>
+        <Col md={3} className="mb-2">
+          <Form.Select
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+          >
+            <option value="all">All Categories</option>
+            {categories.map((cat) => (
+              <option key={cat.id} value={cat.id}>{cat.name}</option>
+            ))}
+          </Form.Select>
+        </Col>
+        <Col md={2} className="mb-2 text-end">
+          <Button variant="outline-secondary" size="sm" onClick={() => {
+            const params = new URLSearchParams({ search: searchTerm, status: statusFilter, category: categoryFilter });
+            window.location = `/api/events/export?${params.toString()}`;
+          }}>
+            Export CSV
+          </Button>
+        </Col>
+      </Row>
 
       {/* Stats Cards */}
       <Row className="mb-4">
@@ -206,7 +257,15 @@ const AdminEvents = () => {
           </tr>
         </thead>
         <tbody>
-          {events.map((event) => (
+          {events
+            .filter(ev => {
+              const matchesSearch = ev.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                ev.location.toLowerCase().includes(searchTerm.toLowerCase());
+              const matchesStatus = statusFilter === 'all' || ev.status === statusFilter;
+              const matchesCategory = categoryFilter === 'all' || ev.category_id === parseInt(categoryFilter);
+              return matchesSearch && matchesStatus && matchesCategory;
+            })
+            .map((event) => (
             <tr key={event.id}>
               <td>{event.id}</td>
               <td>{event.title}</td>

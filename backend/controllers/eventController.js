@@ -13,7 +13,7 @@ exports.getAllEvents = async (req, res) => {
     `;
     const params = [];
 
-    if (category) {
+    if (category && category !== 'all') {
       query += ' AND e.category_id = ?';
       params.push(category);
     }
@@ -23,7 +23,7 @@ exports.getAllEvents = async (req, res) => {
       params.push(`%${search}%`, `%${search}%`);
     }
 
-    if (status) {
+    if (status && status !== 'all') {
       query += ' AND e.status = ?';
       params.push(status);
     }
@@ -154,6 +154,48 @@ exports.deleteEvent = async (req, res) => {
     res.json({ message: 'Event deleted successfully' });
   } catch (error) {
     console.error('Delete event error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Export events CSV (Admin only)
+exports.exportEventsCSV = async (req, res) => {
+  try {
+    const { category, search, status } = req.query;
+    let query = `
+      SELECT e.id, e.title, e.date, e.location, e.capacity, e.price, e.status,
+             c.name as category_name, u.name as organizer_name
+      FROM events e
+      LEFT JOIN categories c ON e.category_id = c.id
+      LEFT JOIN users u ON e.organizer_id = u.id
+      WHERE 1=1
+    `;
+    const params = [];
+    if (category && category !== 'all') {
+      query += ' AND e.category_id = ?';
+      params.push(category);
+    }
+    if (search) {
+      query += ' AND (e.title LIKE ? OR e.description LIKE ?)';
+      params.push(`%${search}%`, `%${search}%`);
+    }
+    if (status && status !== 'all') {
+      query += ' AND e.status = ?';
+      params.push(status);
+    }
+    query += ' ORDER BY e.date DESC';
+
+    const [rows] = await db.query(query, params);
+    const header = 'ID,Title,Date,Location,Capacity,Price,Status,Category,Organizer\n';
+    const csv = rows
+      .map(r => [r.id, r.title, r.date, r.location, r.capacity, r.price, r.status, r.category_name, r.organizer_name]
+      .map(v => `"${v}"`).join(',')).join('\n');
+
+    res.setHeader('Content-Disposition','attachment; filename=events.csv');
+    res.setHeader('Content-Type','text/csv');
+    res.send(header + csv);
+  } catch (err) {
+    console.error('Export events csv error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 };

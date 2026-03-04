@@ -46,6 +46,15 @@ const NavigationBar = () => {
                     <NavDropdown.Item as={Link} to="/tickets">My Tickets</NavDropdown.Item>
                   </NavDropdown>
                 )}
+                <NavDropdown title="Services" id="services-dropdown">
+                  <NavDropdown.Item as={Link} to="/notifications">Notifications</NavDropdown.Item>
+                  <NavDropdown.Item as={Link} to="/payments">Payments</NavDropdown.Item>
+                  <NavDropdown.Item as={Link} to="/feedback">Feedback</NavDropdown.Item>
+                  <NavDropdown.Item as={Link} to="/certificates">Certificates</NavDropdown.Item>
+                  {(user.role === 'organizer' || user.role === 'admin') && (
+                    <NavDropdown.Item as={Link} to="/analytics">Analytics</NavDropdown.Item>
+                  )}
+                </NavDropdown>
               </>
             )}
           </Nav>

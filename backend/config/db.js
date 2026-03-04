@@ -2,15 +2,24 @@ const mysql = require('mysql2');
 require('dotenv').config();
 
 // Create connection pool
-const pool = mysql.createPool({
+const connectionConfig = {
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   waitForConnections: true,
   connectionLimit: 10,
-  queueLimit: 0
-});
+  queueLimit: 0,
+  authPlugins: {
+    mysql_clear_password: () => () => Buffer.alloc(0)
+  }
+};
+
+// Only add password if it's not empty
+if (process.env.DB_PASSWORD && process.env.DB_PASSWORD.trim() !== '') {
+  connectionConfig.password = process.env.DB_PASSWORD;
+}
+
+const pool = mysql.createPool(connectionConfig);
 
 // Get promise-based connection
 const promisePool = pool.promise();
