@@ -28,7 +28,7 @@ const Certificates = () => {
   const fetchCertificates = async () => {
     try {
       setLoading(true);
-      if (userRole === 'organizer') {
+      if (userRole === 'organizer' || userRole === 'admin') {
         if (activeTab === 'my-certificates') {
           const response = await certificatesAPI.getAll();
           setCertificates(response.data);
@@ -89,7 +89,7 @@ const Certificates = () => {
     <Container className="mt-4 mb-5">
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2>🎖️ Certificates</h2>
-        {userRole === 'organizer' && (
+        {(userRole === 'organizer' || userRole === 'admin') && (
           <Button variant="primary" onClick={() => setShowAutoGenModal(true)}>
             Generate Certificates
           </Button>
@@ -102,7 +102,7 @@ const Certificates = () => {
         </Alert>
       )}
 
-      {userRole === 'organizer' && (
+      {userRole === 'organizer' || userRole === 'admin' ? (
         <div className="mb-3">
           <Button
             variant={activeTab === 'my-certificates' ? 'primary' : 'outline-primary'}
@@ -125,7 +125,7 @@ const Certificates = () => {
             Statistics
           </Button>
         </div>
-      )}
+      ) : null}
 
       {activeTab === 'my-certificates' && (
         <Row>

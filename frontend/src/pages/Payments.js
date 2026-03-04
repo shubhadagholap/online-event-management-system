@@ -19,6 +19,7 @@ const Payments = () => {
     upi_id: ''
   });
   const [submitting, setSubmitting] = useState(false);
+  const [counts, setCounts] = useState({ total: 0, completed: 0, pending: 0, failed: 0, refunded: 0 });
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -43,7 +44,14 @@ const Payments = () => {
         // non-admin users should only see their payments
         response = await paymentsAPI.getMyPayments();
       }
-      setPayments(response.data);
+      const list = response.data;
+      setPayments(list);
+      // compute summary counts
+      const summary = { total: list.length, completed:0, pending:0, failed:0, refunded:0 };
+      list.forEach(p => {
+        if (p.status && summary[p.status] !== undefined) summary[p.status]++;
+      });
+      setCounts(summary);
     } catch (error) {
       console.error('Error fetching payments:', error);
       setMessage({ type: 'danger', text: 'Failed to load payments' });
@@ -89,6 +97,16 @@ const Payments = () => {
         <h2>💳 Payment Management</h2>
         <Button variant="primary" onClick={() => setShowModal(true)}>New Payment</Button>
       </div>
+      {/* Summary counts */}
+      <Row className="mb-3">
+        <Col>
+          <Badge bg="secondary" className="me-2">Total: {counts.total}</Badge>
+          <Badge bg="success" className="me-2">Completed: {counts.completed}</Badge>
+          <Badge bg="warning" className="me-2">Pending: {counts.pending}</Badge>
+          <Badge bg="danger" className="me-2">Failed: {counts.failed}</Badge>
+          <Badge bg="dark">Refunded: {counts.refunded}</Badge>
+        </Col>
+      </Row>
 
       {message.text && (
         <Alert variant={message.type} onClose={() => setMessage({ type: '', text: '' })} dismissible>
