@@ -32,3 +32,4 @@ WHERE image_url IS NULL OR image_url = '';
 
 -- Verify the update
 SELECT id, title, image_url FROM events LIMIT 10;
+//---

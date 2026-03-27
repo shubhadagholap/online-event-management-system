@@ -9,7 +9,9 @@ const OrganizerDashboard = () => {
     totalRevenue: 0,
     pendingBookings: 0,
     confirmedBookings: 0,
-    cancelledBookings: 0
+    cancelledBookings: 0,
+    upcomingEvents: 0,
+    completedEvents: 0
   });
   const [loading, setLoading] = useState(true);
 
@@ -20,7 +22,20 @@ const OrganizerDashboard = () => {
   const fetchStats = async () => {
     try {
       const response = await bookingsAPI.getDashboardStats();
-      setStats(response.data);
+      const data = response.data;
+      
+      // Ensure all values are properly handled
+      setStats({
+        myEvents: data.myEvents || 0,
+        totalBookings: data.totalBookings || 0,
+        totalRevenue: data.totalRevenue || 0,
+        pendingBookings: data.pendingBookings || 0,
+        confirmedBookings: data.confirmedBookings || 0,
+        cancelledBookings: data.cancelledBookings || 0,
+        upcomingEvents: data.upcomingEvents || 0,
+        completedEvents: data.completedEvents || 0
+      });
+      
       setLoading(false);
     } catch (error) {
       console.error('Error fetching stats:', error);
@@ -40,7 +55,8 @@ const OrganizerDashboard = () => {
           <Card className="dashboard-card">
             <Card.Body>
               <h6 className="text-muted">My Events</h6>
-              <h2>{stats.myEvents || 0}</h2>
+              <h2>{stats.myEvents}</h2>
+              <small className="text-success">{stats.upcomingEvents} upcoming</small>
             </Card.Body>
           </Card>
         </Col>
@@ -48,7 +64,7 @@ const OrganizerDashboard = () => {
           <Card className="dashboard-card">
             <Card.Body>
               <h6 className="text-muted">Total Bookings</h6>
-              <h2>{stats.totalBookings || 0}</h2>
+              <h2>{stats.totalBookings}</h2>
             </Card.Body>
           </Card>
         </Col>
@@ -56,34 +72,42 @@ const OrganizerDashboard = () => {
           <Card className="dashboard-card">
             <Card.Body>
               <h6 className="text-muted">Total Revenue</h6>
-              <h2>${(parseFloat(stats.totalRevenue) || 0).toFixed(2)}</h2>
+              <h2>${stats.totalRevenue.toFixed(2)}</h2>
             </Card.Body>
           </Card>
         </Col>
       </Row>
       
       <Row>
-        <Col md={4} className="mb-4">
+        <Col md={3} className="mb-4">
           <Card className="dashboard-card">
             <Card.Body>
               <h6 className="text-muted">Confirmed Bookings</h6>
-              <h2 className="text-success">{stats.confirmedBookings || 0}</h2>
+              <h2 className="text-success">{stats.confirmedBookings}</h2>
             </Card.Body>
           </Card>
         </Col>
-        <Col md={4} className="mb-4">
+        <Col md={3} className="mb-4">
           <Card className="dashboard-card">
             <Card.Body>
               <h6 className="text-muted">Pending Bookings</h6>
-              <h2 className="text-warning">{stats.pendingBookings || 0}</h2>
+              <h2 className="text-warning">{stats.pendingBookings}</h2>
             </Card.Body>
           </Card>
         </Col>
-        <Col md={4} className="mb-4">
+        <Col md={3} className="mb-4">
           <Card className="dashboard-card">
             <Card.Body>
               <h6 className="text-muted">Cancelled Bookings</h6>
-              <h2 className="text-danger">{stats.cancelledBookings || 0}</h2>
+              <h2 className="text-danger">{stats.cancelledBookings}</h2>
+            </Card.Body>
+          </Card>
+        </Col>
+        <Col md={3} className="mb-4">
+          <Card className="dashboard-card">
+            <Card.Body>
+              <h6 className="text-muted">Completed Events</h6>
+              <h2 className="text-secondary">{stats.completedEvents}</h2>
             </Card.Body>
           </Card>
         </Col>

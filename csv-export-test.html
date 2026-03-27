@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV Export Test Interface</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .export-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .export-section h3 {
+            margin-top: 0;
+            color: #555;
+        }
+        .btn {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        .btn-success {
+            background-color: #28a745;
+        }
+        .btn-success:hover {
+            background-color: #1e7e34;
+        }
+        .filters {
+            margin: 10px 0;
+        }
+        .filters input, .filters select {
+            margin: 5px;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+        .status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔄 CSV Export Test Interface</h1>
+        
+        <div class="export-section">
+            <h3>📊 Individual Exports</h3>
+            <p>Click any button below to download CSV data:</p>
+            
+            <div>
+                <a href="/api/users/export" class="btn" target="_blank">👥 Export Users</a>
+                <a href="/api/events/export" class="btn" target="_blank">🎪 Export Events</a>
+                <a href="/api/bookings/export" class="btn" target="_blank">📝 Export Bookings</a>
+                <a href="/api/categories/export" class="btn" target="_blank">🏷️ Export Categories</a>
+                <a href="/api/payments/export" class="btn" target="_blank">💳 Export Payments</a>
+            </div>
+        </div>
+
+        <div class="export-section">
+            <h3>🔍 Filtered Exports</h3>
+            
+            <div>
+                <h4>Users Export with Filters</h4>
+                <div class="filters">
+                    <input type="text" id="userSearch" placeholder="Search users...">
+                    <select id="userRole">
+                        <option value="">All Roles</option>
+                        <option value="admin">Admin</option>
+                        <option value="organizer">Organizer</option>
+                        <option value="attendee">Attendee</option>
+                    </select>
+                    <button class="btn" onclick="exportWithFilters('users')">Export Users</button>
+                </div>
+            </div>
+
+            <div>
+                <h4>Events Export with Filters</h4>
+                <div class="filters">
+                    <input type="text" id="eventSearch" placeholder="Search events...">
+                    <select id="eventStatus">
+                        <option value="">All Status</option>
+                        <option value="upcoming">Upcoming</option>
+                        <option value="ongoing">Ongoing</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                    <button class="btn" onclick="exportWithFilters('events')">Export Events</button>
+                </div>
+            </div>
+
+            <div>
+                <h4>Payments Export with Filters</h4>
+                <div class="filters">
+                    <input type="text" id="paymentSearch" placeholder="Search payments...">
+                    <select id="paymentStatus">
+                        <option value="">All Status</option>
+                        <option value="completed">Completed</option>
+                        <option value="pending">Pending</option>
+                        <option value="failed">Failed</option>
+                    </select>
+                    <input type="date" id="fromDate" placeholder="From Date">
+                    <input type="date" id="toDate" placeholder="To Date">
+                    <button class="btn" onclick="exportWithFilters('payments')">Export Payments</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="export-section">
+            <h3>🚀 Bulk Operations</h3>
+            <button class="btn btn-success" onclick="testAllExports()">Test All CSV Exports</button>
+            <button class="btn btn-success" onclick="downloadAllCSVs()">Download All CSVs</button>
+            
+            <div id="testStatus" class="status"></div>
+        </div>
+
+        <div class="export-section">
+            <h3>📈 Export Statistics</h3>
+            <div id="stats">Loading statistics...</div>
+        </div>
+    </div>
+
+    <script>
+        // Base URL for API calls
+        const API_BASE = window.location.origin + '/api';
+        
+        // Function to export with filters
+        function exportWithFilters(type) {
+            let params = new URLSearchParams();
+            
+            if (type === 'users') {
+                const search = document.getElementById('userSearch').value;
+                const role = document.getElementById('userRole').value;
+                if (search) params.append('search', search);
+                if (role) params.append('role', role);
+            } else if (type === 'events') {
+                const search = document.getElementById('eventSearch').value;
+                const status = document.getElementById('eventStatus').value;
+                if (search) params.append('search', search);
+                if (status) params.append('status', status);
+            } else if (type === 'payments') {
+                const search = document.getElementById('paymentSearch').value;
+                const status = document.getElementById('paymentStatus').value;
+                const fromDate = document.getElementById('fromDate').value;
+                const toDate = document.getElementById('toDate').value;
+                if (search) params.append('search', search);
+                if (status) params.append('status', status);
+                if (fromDate) params.append('from_date', fromDate);
+                if (toDate) params.append('to_date', toDate);
+            }
+            
+            const url = `${API_BASE}/${type}/export?${params.toString()}`;
+            window.open(url, '_blank');
+        }
+
+        // Function to test all exports
+        async function testAllExports() {
+            const statusDiv = document.getElementById('testStatus');
+            statusDiv.style.display = 'block';
+            statusDiv.className = 'status';
+            statusDiv.innerHTML = '🔄 Testing all CSV exports...';
+            
+            const endpoints = ['users', 'events', 'bookings', 'categories', 'payments'];
+            const results = [];
+            
+            for (const endpoint of endpoints) {
+                try {
+                    const response = await fetch(`${API_BASE}/${endpoint}/export`);
+                    if (response.ok) {
+                        const contentType = response.headers.get('content-type');
+                        if (contentType && contentType.includes('text/csv')) {
+                            results.push(`✅ ${endpoint}: Success`);
+                        } else {
+                            results.push(`❌ ${endpoint}: Not CSV format`);
+                        }
+                    } else {
+                        results.push(`❌ ${endpoint}: ${response.status} ${response.statusText}`);
+                    }
+                } catch (error) {
+                    results.push(`❌ ${endpoint}: ${error.message}`);
+                }
+            }
+            
+            statusDiv.className = 'status success';
+            statusDiv.innerHTML = '<strong>Test Results:</strong><br>' + results.join('<br>');
+        }
+
+        // Function to download all CSVs
+        function downloadAllCSVs() {
+            const endpoints = ['users', 'events', 'bookings', 'categories', 'payments'];
+            endpoints.forEach(endpoint => {
+                setTimeout(() => {
+                    window.open(`${API_BASE}/${endpoint}/export`, '_blank');
+                }, 500); // Small delay between downloads
+            });
+        }
+
+        // Load statistics on page load
+        async function loadStats() {
+            try {
+                // This would need to be implemented in the backend
+                const statsDiv = document.getElementById('stats');
+                statsDiv.innerHTML = `
+                    <p>📊 Export statistics would be displayed here</p>
+                    <p>This requires implementing the stats endpoint in the backend</p>
+                `;
+            } catch (error) {
+                document.getElementById('stats').innerHTML = 'Error loading statistics';
+            }
+        }
+
+        // Load stats when page loads
+        window.onload = loadStats;
+    </script>
+</body>
+</html>
