@@ -65,6 +65,9 @@ const Login = () => {
                 </Button>
               </Form>
               <div className="text-center mt-3">
+                <Link to="/forgot-password">Forgot Password?</Link>
+              </div>
+              <div className="text-center mt-2">
                 Don't have an account? <Link to="/register">Register here</Link>
               </div>
             </Card.Body>
