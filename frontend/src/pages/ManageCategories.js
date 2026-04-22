@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Table, Button, Modal, Form, Alert } from 'react-bootstrap';
 import { categoriesAPI } from '../services/api';
+import { downloadCSV } from '../utils/csvExport';
 
 const ManageCategories = () => {
   const [categories, setCategories] = useState([]);
@@ -82,7 +83,7 @@ const ManageCategories = () => {
           />
           <Button variant="outline-secondary" size="sm" onClick={() => {
             const params = new URLSearchParams({ search: searchTerm });
-            window.location = `/api/categories/export?${params.toString()}`;
+            downloadCSV(`http://localhost:5000/api/categories/export?${params.toString()}`, 'categories.csv');
           }}>
             Export CSV
           </Button>

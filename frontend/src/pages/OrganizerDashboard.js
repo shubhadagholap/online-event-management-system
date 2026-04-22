@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card } from 'react-bootstrap';
+import React, { useState, useEffect, useContext } from 'react';
+import { Container, Row, Col, Card, Button } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 import { bookingsAPI } from '../services/api';
+import { AuthContext } from '../context/AuthContext';
 
 const OrganizerDashboard = () => {
   const [stats, setStats] = useState({
@@ -12,6 +14,13 @@ const OrganizerDashboard = () => {
     cancelledBookings: 0
   });
   const [loading, setLoading] = useState(true);
+  const { user, logout } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   useEffect(() => {
     fetchStats();
@@ -24,6 +33,11 @@ const OrganizerDashboard = () => {
       setLoading(false);
     } catch (error) {
       console.error('Error fetching stats:', error);
+      // If 401 error, redirect to login
+      if (error.response?.status === 401) {
+        logout();
+        navigate('/login');
+      }
       setLoading(false);
     }
   };
@@ -34,7 +48,25 @@ const OrganizerDashboard = () => {
 
   return (
     <Container className="mt-4 mb-5">
-      <h2 className="mb-4">Organizer Dashboard</h2>
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <div className="d-flex align-items-center">
+          <div className="me-3">
+            <img 
+              src={`https://ui-avatars.com/api/?name=${user?.name}&background=28a745&color=fff&size=50`}
+              alt={user?.name}
+              style={{ width: '50px', height: '50px', borderRadius: '50%' }}
+            />
+          </div>
+          <div>
+            <h2 className="mb-0">Organizer Dashboard</h2>
+            <small className="text-muted">Welcome back, {user?.name}!</small>
+          </div>
+        </div>
+        <Button variant="outline-danger" onClick={handleLogout}>
+          <i className="bi bi-box-arrow-right me-2"></i>
+          Sign Out
+        </Button>
+      </div>
       <Row>
         <Col md={4} className="mb-4">
           <Card className="dashboard-card">

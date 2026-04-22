@@ -135,26 +135,87 @@ exports.updateEvent = async (req, res) => {
 
 // Delete event (Organizer/Admin only)
 exports.deleteEvent = async (req, res) => {
+  const connection = await db.getConnection();
+  
   try {
     const eventId = req.params.id;
 
     // Check if event exists and user has permission
-    const [events] = await db.query('SELECT * FROM events WHERE id = ?', [eventId]);
+    const [events] = await connection.query('SELECT * FROM events WHERE id = ?', [eventId]);
     if (events.length === 0) {
       return res.status(404).json({ message: 'Event not found' });
     }
 
+    const event = events[0];
+
     // Check if user is organizer of this event or admin
-    if (req.user.role !== 'admin' && events[0].organizer_id !== req.user.id) {
+    if (req.user.role !== 'admin' && event.organizer_id !== req.user.id) {
       return res.status(403).json({ message: 'Not authorized to delete this event' });
     }
 
-    await db.query('DELETE FROM events WHERE id = ?', [eventId]);
+    await connection.beginTransaction();
 
-    res.json({ message: 'Event deleted successfully' });
+    try {
+      // Delete all related data in order
+      
+      // 1. Delete certificates for this event
+      await connection.query('DELETE FROM certificates WHERE event_id = ?', [eventId]);
+      
+      // 2. Delete feedback for this event
+      await connection.query('DELETE FROM feedback WHERE event_id = ?', [eventId]);
+      
+      // 3. Delete tickets for bookings of this event
+      await connection.query(
+        'DELETE FROM tickets WHERE booking_id IN (SELECT id FROM bookings WHERE event_id = ?)',
+        [eventId]
+      );
+      
+      // 4. Delete payments for this event
+      await connection.query('DELETE FROM payments WHERE event_id = ?', [eventId]);
+      
+      // 5. Delete bookings for this event
+      await connection.query('DELETE FROM bookings WHERE event_id = ?', [eventId]);
+      
+      // 6. Delete attendees
+      await connection.query('DELETE FROM attendees WHERE event_id = ?', [eventId]);
+      
+      // 7. Delete speakers
+      await connection.query('DELETE FROM speakers WHERE event_id = ?', [eventId]);
+      
+      // 8. Delete schedule sessions
+      await connection.query('DELETE FROM schedule_sessions WHERE event_id = ?', [eventId]);
+      
+      // 9. Delete tasks
+      await connection.query('DELETE FROM tasks WHERE event_id = ?', [eventId]);
+      
+      // 10. Delete marketing campaigns
+      await connection.query('DELETE FROM marketing_campaigns WHERE event_id = ?', [eventId]);
+      
+      // 11. Finally, delete the event
+      await connection.query('DELETE FROM events WHERE id = ?', [eventId]);
+
+      await connection.commit();
+
+      res.json({ 
+        message: 'Event and all related data deleted successfully',
+        deletedEvent: {
+          id: event.id,
+          title: event.title,
+          organizer_id: event.organizer_id
+        }
+      });
+    } catch (error) {
+      await connection.rollback();
+      throw error;
+    }
   } catch (error) {
     console.error('Delete event error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ 
+      message: 'Failed to delete event',
+      error: error.message 
+    });
+  } finally {
+    connection.release();
   }
 };
 

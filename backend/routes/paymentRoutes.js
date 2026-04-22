@@ -16,5 +16,6 @@ router.get('/:id', paymentController.getPaymentById);
 router.get('/', roleCheck('admin'), paymentController.getAllPayments);
 router.get('/export', roleCheck('admin'), paymentController.exportPaymentsCSV);
 router.put('/:id/refund', roleCheck('admin'), paymentController.refundPayment);
+router.delete('/:id', roleCheck('admin'), paymentController.deletePayment);
 
 module.exports = router;
