@@ -191,7 +191,7 @@ const AdminEvents = () => {
         <Col md={2} className="mb-2 text-end">
           <Button variant="outline-secondary" size="sm" onClick={() => {
             const params = new URLSearchParams({ search: searchTerm, status: statusFilter, category: categoryFilter });
-            window.location = `/api/events/export?${params.toString()}`;
+            downloadCSV(`http://localhost:5000/api/events/export?${params.toString()}`, 'events.csv');
           }}>
             Export CSV
           </Button>
@@ -491,3 +491,5 @@ const AdminEvents = () => {
 };
 
 export default AdminEvents;
+
+import { downloadCSV } from '../utils/csvExport';

@@ -186,3 +186,56 @@ exports.refundPayment = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+
+// Delete payment (Admin only)
+exports.deletePayment = async (req, res) => {
+  const connection = await db.getConnection();
+  
+  try {
+    const paymentId = req.params.id;
+
+    // Check if payment exists
+    const [payments] = await connection.query('SELECT * FROM payments WHERE id = ?', [paymentId]);
+    if (payments.length === 0) {
+      return res.status(404).json({ message: 'Payment not found' });
+    }
+
+    const payment = payments[0];
+
+    await connection.beginTransaction();
+
+    try {
+      // Update booking payment status back to pending
+      await connection.query(
+        'UPDATE bookings SET payment_status = "pending" WHERE id = ?',
+        [payment.booking_id]
+      );
+
+      // Delete the payment
+      await connection.query('DELETE FROM payments WHERE id = ?', [paymentId]);
+
+      await connection.commit();
+
+      res.json({ 
+        message: 'Payment deleted successfully',
+        deletedPayment: {
+          id: payment.id,
+          transaction_id: payment.transaction_id,
+          amount: payment.amount
+        }
+      });
+    } catch (error) {
+      await connection.rollback();
+      throw error;
+    }
+  } catch (error) {
+    console.error('Delete payment error:', error);
+    res.status(500).json({ 
+      message: 'Failed to delete payment',
+      error: error.message 
+    });
+  } finally {
+    connection.release();
+  }
+};

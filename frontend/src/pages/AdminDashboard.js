@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Container, Row, Col, Card, Button, ListGroup } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { eventsAPI, usersAPI, bookingsAPI } from '../services/api';
+import { AuthContext } from '../context/AuthContext';
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState({
@@ -18,6 +19,13 @@ const AdminDashboard = () => {
   });
   const [recentEvents, setRecentEvents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { user, logout } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   useEffect(() => {
     fetchDashboardData();
@@ -52,6 +60,11 @@ const AdminDashboard = () => {
       setLoading(false);
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
+      // If 401 error, redirect to login
+      if (error.response?.status === 401) {
+        logout();
+        navigate('/login');
+      }
       setLoading(false);
     }
   };
@@ -63,13 +76,31 @@ const AdminDashboard = () => {
   return (
     <Container className="mt-4 mb-5">
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2>Admin Dashboard</h2>
-        <Link to="/admin/events">
-          <Button variant="primary">
-            <i className="bi bi-plus-circle me-2"></i>
-            Create Event
+        <div className="d-flex align-items-center">
+          <div className="me-3">
+            <img 
+              src={`https://ui-avatars.com/api/?name=${user?.name}&background=667eea&color=fff&size=50`}
+              alt={user?.name}
+              style={{ width: '50px', height: '50px', borderRadius: '50%' }}
+            />
+          </div>
+          <div>
+            <h2 className="mb-0">Admin Dashboard</h2>
+            <small className="text-muted">Welcome back, {user?.name}!</small>
+          </div>
+        </div>
+        <div>
+          <Link to="/admin/events" className="me-2">
+            <Button variant="primary">
+              <i className="bi bi-plus-circle me-2"></i>
+              Create Event
+            </Button>
+          </Link>
+          <Button variant="outline-danger" onClick={handleLogout}>
+            <i className="bi bi-box-arrow-right me-2"></i>
+            Sign Out
           </Button>
-        </Link>
+        </div>
       </div>
 
       {/* Stats Cards */}

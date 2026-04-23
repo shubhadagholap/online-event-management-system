@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Container, Table, Badge, Button, Alert } from 'react-bootstrap';
 import { bookingsAPI } from '../services/api';
+import { AuthContext } from '../context/AuthContext';
 
 const MyBookings = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState({ type: '', text: '' });
+  const { user } = useContext(AuthContext);
 
   useEffect(() => {
     fetchBookings();
@@ -55,7 +57,17 @@ const MyBookings = () => {
 
   return (
     <Container className="mt-4 mb-5">
-      <h2 className="mb-4">My Bookings</h2>
+      <div className="d-flex align-items-center mb-4">
+        <img 
+          src={`https://ui-avatars.com/api/?name=${user?.name}&background=007bff&color=fff&size=50`}
+          alt={user?.name}
+          style={{ width: '50px', height: '50px', borderRadius: '50%', marginRight: '15px' }}
+        />
+        <div>
+          <h2 className="mb-0">My Bookings</h2>
+          <small className="text-muted">{user?.name}</small>
+        </div>
+      </div>
 
       {message.text && (
         <Alert variant={message.type} onClose={() => setMessage({ type: '', text: '' })} dismissible>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Table, Button, Modal, Form, Alert } from 'react-bootstrap';
 import { usersAPI } from '../services/api';
+import { downloadCSV } from '../utils/csvExport';
 
 const ManageUsers = () => {
   const [users, setUsers] = useState([]);
@@ -92,7 +93,7 @@ const ManageUsers = () => {
         <div className="mt-2 mt-md-0">
           <Button variant="outline-secondary" size="sm" onClick={() => {
             const params = new URLSearchParams({ search: searchTerm, role: roleFilter });
-            window.location = `/api/users/export?${params.toString()}`;
+            downloadCSV(`http://localhost:5000/api/users/export?${params.toString()}`, 'users.csv');
           }}>
             Export CSV
           </Button>

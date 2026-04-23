@@ -25,6 +25,23 @@ api.interceptors.request.use(
   }
 );
 
+// Handle 401 errors globally
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Clear auth data
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      // Redirect to login if not already there
+      if (!window.location.pathname.includes('/login')) {
+        window.location.href = '/login';
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 // Auth API
 export const authAPI = {
   register: (data) => api.post('/auth/register', data),
@@ -82,6 +99,7 @@ export const paymentsAPI = {
   getById: (id) => api.get(`/payments/${id}`),
   exportCSV: (params) => `${API_URL}/payments/export?${new URLSearchParams(params).toString()}`,
   refund: (id) => api.put(`/payments/${id}/refund`),
+  delete: (id) => api.delete(`/payments/${id}`),
 };
 
 // Notifications API

@@ -60,10 +60,27 @@ const NavigationBar = () => {
           </Nav>
           <Nav>
             {user ? (
-              <NavDropdown title={user.name} id="user-dropdown" align="end">
-                <NavDropdown.Item as={Link} to="/profile">Profile</NavDropdown.Item>
+              <NavDropdown 
+                title={
+                  <span className="d-flex align-items-center">
+                    <img 
+                      src={`https://ui-avatars.com/api/?name=${user.name}&background=${user.role === 'admin' ? '667eea' : user.role === 'organizer' ? '28a745' : '007bff'}&color=fff&size=32`}
+                      alt={user.name}
+                      style={{ width: '32px', height: '32px', borderRadius: '50%', marginRight: '8px' }}
+                    />
+                    {user.name}
+                  </span>
+                } 
+                id="user-dropdown" 
+                align="end"
+              >
+                <NavDropdown.Item as={Link} to="/profile">
+                  <i className="bi bi-person me-2"></i>Profile
+                </NavDropdown.Item>
                 <NavDropdown.Divider />
-                <NavDropdown.Item onClick={handleLogout}>Logout</NavDropdown.Item>
+                <NavDropdown.Item onClick={handleLogout}>
+                  <i className="bi bi-box-arrow-right me-2"></i>Logout
+                </NavDropdown.Item>
               </NavDropdown>
             ) : (
               <>

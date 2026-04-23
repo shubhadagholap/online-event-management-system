@@ -51,13 +51,15 @@ const Categories = () => {
       'Music': '🎵',
       'Sports': '⚽',
       'Technology': '💻',
-      'Business': '💼',
+      'Business': '📅',
       'Arts': '🎨',
       'Education': '📚',
       'Food': '🍔',
       'Health': '🏥',
       'Entertainment': '🎭',
-      'Conference': '🎤'
+      'Conference': '🎤',
+      'Online & Virtual Events': '🌐',
+      'Social & Personal Events': '🎉'
     };
     return icons[categoryName] || '📅';
   };

@@ -206,7 +206,7 @@ const ManageBookings = () => {
         <Col md={2} className="mb-2 text-end">
           <Button variant="outline-secondary" size="sm" onClick={() => {
             const params = new URLSearchParams({ search: searchTerm, status: statusFilter, payment: paymentFilter });
-            window.location = `/api/bookings/export?${params.toString()}`;
+            downloadCSV(`http://localhost:5000/api/bookings/export?${params.toString()}`, 'bookings.csv');
           }}>
             Export CSV
           </Button>
@@ -319,3 +319,5 @@ const ManageBookings = () => {
 };
 
 export default ManageBookings;
+
+import { downloadCSV } from '../utils/csvExport';
