@@ -8,8 +8,13 @@ const AdminDashboard = () => {
   const [stats, setStats] = useState({
     totalEvents: 0,
     upcomingEvents: 0,
+    completedEvents: 0,
     totalUsers: 0,
+    totalOrganizers: 0,
     totalBookings: 0,
+    pendingBookings: 0,
+    confirmedBookings: 0,
+    cancelledBookings: 0,
     totalRevenue: 0
   });
   const [recentEvents, setRecentEvents] = useState([]);
@@ -28,21 +33,26 @@ const AdminDashboard = () => {
 
   const fetchDashboardData = async () => {
     try {
-      // Use the new dashboard stats endpoint for better performance
-      const [statsRes, eventsRes] = await Promise.all([
-        bookingsAPI.getDashboardStats(),
-        eventsAPI.getAll()
-      ]);
-
+      // Get dashboard stats from the improved API endpoint
+      const statsRes = await bookingsAPI.getDashboardStats();
       const stats = statsRes.data;
+
+      // Get events for recent events display
+      const eventsRes = await eventsAPI.getAll();
       const events = eventsRes.data;
 
+      // Use API stats directly without fallback logic that causes inconsistencies
       setStats({
-        totalEvents: stats.totalEvents || events.length,
-        upcomingEvents: events.filter(e => e.status === 'upcoming').length,
+        totalEvents: stats.totalEvents || 0,
+        upcomingEvents: stats.upcomingEvents || 0,
+        completedEvents: stats.completedEvents || 0,
         totalUsers: stats.totalUsers || 0,
+        totalOrganizers: stats.totalOrganizers || 0,
         totalBookings: stats.totalBookings || 0,
-        totalRevenue: parseFloat(stats.totalRevenue) || 0
+        pendingBookings: stats.pendingBookings || 0,
+        confirmedBookings: stats.confirmedBookings || 0,
+        cancelledBookings: stats.cancelledBookings || 0,
+        totalRevenue: stats.totalRevenue || 0
       });
 
       // Get recent events (last 5)
@@ -114,7 +124,8 @@ const AdminDashboard = () => {
                 👥
               </div>
               <h3 className="text-info">{stats.totalUsers}</h3>
-              <p className="text-muted mb-0">Total Users</p>
+              <p className="text-muted mb-0">Regular Users</p>
+              <small className="text-info">{stats.totalOrganizers} organizers</small>
             </Card.Body>
           </Card>
         </Col>
@@ -126,6 +137,7 @@ const AdminDashboard = () => {
               </div>
               <h3 className="text-warning">{stats.totalBookings}</h3>
               <p className="text-muted mb-0">Total Bookings</p>
+              <small className="text-success">{stats.confirmedBookings} confirmed</small>
             </Card.Body>
           </Card>
         </Col>
@@ -137,6 +149,43 @@ const AdminDashboard = () => {
               </div>
               <h3 className="text-success">${stats.totalRevenue.toFixed(2)}</h3>
               <p className="text-muted mb-0">Total Revenue</p>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+
+      {/* Additional Stats Row */}
+      <Row className="mb-4">
+        <Col md={4} className="mb-3">
+          <Card className="text-center h-100 shadow-sm">
+            <Card.Body>
+              <div className="text-warning mb-2" style={{ fontSize: '1.5rem' }}>
+                ⏳
+              </div>
+              <h4 className="text-warning">{stats.pendingBookings}</h4>
+              <p className="text-muted mb-0">Pending Bookings</p>
+            </Card.Body>
+          </Card>
+        </Col>
+        <Col md={4} className="mb-3">
+          <Card className="text-center h-100 shadow-sm">
+            <Card.Body>
+              <div className="text-danger mb-2" style={{ fontSize: '1.5rem' }}>
+                ❌
+              </div>
+              <h4 className="text-danger">{stats.cancelledBookings}</h4>
+              <p className="text-muted mb-0">Cancelled Bookings</p>
+            </Card.Body>
+          </Card>
+        </Col>
+        <Col md={4} className="mb-3">
+          <Card className="text-center h-100 shadow-sm">
+            <Card.Body>
+              <div className="text-secondary mb-2" style={{ fontSize: '1.5rem' }}>
+                ✅
+              </div>
+              <h4 className="text-secondary">{stats.completedEvents}</h4>
+              <p className="text-muted mb-0">Completed Events</p>
             </Card.Body>
           </Card>
         </Col>

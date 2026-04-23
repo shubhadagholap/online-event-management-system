@@ -10,11 +10,11 @@ router.use(auth);
 // User routes
 router.post('/', paymentController.createPayment);
 router.get('/my-payments', paymentController.getUserPayments);
-router.get('/:id', paymentController.getPaymentById);
 
 // Admin routes
 router.get('/', roleCheck('admin'), paymentController.getAllPayments);
 router.get('/export', roleCheck('admin'), paymentController.exportPaymentsCSV);
+router.get('/:id', paymentController.getPaymentById);
 router.put('/:id/refund', roleCheck('admin'), paymentController.refundPayment);
 router.delete('/:id', roleCheck('admin'), paymentController.deletePayment);
 

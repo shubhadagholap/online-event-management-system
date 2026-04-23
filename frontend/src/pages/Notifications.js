@@ -137,7 +137,7 @@ const Notifications = () => {
                           </small>
                         </div>
                         {!notification.is_read && (
-                          <Button variant="sm" outline size="sm" onClick={() => handleMarkAsRead(notification.id)}>
+                          <Button variant="outline-secondary" size="sm" onClick={() => handleMarkAsRead(notification.id)}>
                             Mark Read
                           </Button>
                         )}
