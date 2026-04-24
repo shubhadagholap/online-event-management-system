@@ -38,7 +38,7 @@
 - Total Users: 7 (regular users)
 - Total Organizers: 4
 - Total Bookings: 15
-- Total Revenue: $8,419.99
+- Total Revenue: ₹8,419.99
 - Categories: 8
 - Pending Bookings: 1
 - Confirmed Bookings: 13

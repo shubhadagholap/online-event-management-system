@@ -17,7 +17,7 @@ exports.getAllUsers = async (req, res) => {
       params.push(role);
     }
 
-    query += ' ORDER BY created_at DESC';
+    query += ' ORDER BY id ASC, created_at DESC';
 
     const [users] = await db.query(query, params);
     res.json(users);

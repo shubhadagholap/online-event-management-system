@@ -124,7 +124,7 @@ const OrganizerEvents = () => {
               <td>{event.location}</td>
               <td>{event.capacity}</td>
               <td>{event.available_seats}</td>
-              <td>${event.price}</td>
+              <td>₹{event.price}</td>
               <td>{event.status}</td>
               <td>
                 <Button variant="primary" size="sm" className="me-2" onClick={() => handleEdit(event)}>
@@ -203,7 +203,7 @@ const OrganizerEvents = () => {
               />
             </Form.Group>
             <Form.Group className="mb-3">
-              <Form.Label>Price</Form.Label>
+              <Form.Label>Price (₹)</Form.Label>
               <Form.Control
                 type="number"
                 step="0.01"

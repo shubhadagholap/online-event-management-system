@@ -39,7 +39,7 @@ connection.query(`
     console.log(`  User: ${booking.user_name}`);
     console.log(`  Status: ${booking.status}`);
     console.log(`  Payment Status: ${booking.payment_status}`);
-    console.log(`  Amount: $${booking.total_amount}`);
+    console.log(`  Amount: ₹${booking.total_amount}`);
     console.log('');
   });
   

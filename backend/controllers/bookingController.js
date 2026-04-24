@@ -31,7 +31,7 @@ exports.getAllBookings = async (req, res) => {
       params.push(payment);
     }
 
-    query += ' ORDER BY b.booking_date DESC';
+    query += ' ORDER BY b.created_at DESC';
 
     const [bookings] = await db.query(query, params);
     res.json(bookings);
@@ -300,16 +300,15 @@ exports.exportBookingsCSV = async (req, res) => {
 };
 
 // Get dashboard statistics
+// Get dashboard statistics
 exports.getDashboardStats = async (req, res) => {
   try {
     const userRole = req.user.role;
     const userId = req.user.id;
-<<<<<<< HEAD
 
     let stats = {};
 
     if (userRole === 'admin') {
-      // Admin sees all statistics with accurate counts
       const [totalBookings] = await db.query('SELECT COUNT(*) as count FROM bookings');
       const [totalEvents] = await db.query('SELECT COUNT(*) as count FROM events');
       const [totalUsers] = await db.query('SELECT COUNT(*) as count FROM users WHERE role = "user"');
@@ -317,43 +316,21 @@ exports.getDashboardStats = async (req, res) => {
       const [pendingBookings] = await db.query('SELECT COUNT(*) as count FROM bookings WHERE status = "pending"');
       const [confirmedBookings] = await db.query('SELECT COUNT(*) as count FROM bookings WHERE status = "confirmed"');
       const [cancelledBookings] = await db.query('SELECT COUNT(*) as count FROM bookings WHERE status = "cancelled"');
-      
-      // More accurate revenue calculation - verify payment exists and is completed
+
       const [totalRevenue] = await db.query(`
-        SELECT COALESCE(SUM(b.total_amount), 0) as revenue 
-        FROM bookings b 
-        WHERE b.payment_status = "paid" 
-        AND b.status != "cancelled"
+        SELECT COALESCE(SUM(total_amount), 0) as revenue
+        FROM bookings
+        WHERE payment_status = "paid" AND status != "cancelled"
       `);
 
-      // Additional useful stats for admin
       const [upcomingEvents] = await db.query('SELECT COUNT(*) as count FROM events WHERE status = "upcoming"');
       const [completedEvents] = await db.query('SELECT COUNT(*) as count FROM events WHERE status = "completed"');
 
-=======
-    
-    let stats = {};
-    
-    if (userRole === 'admin') {
-      // Admin sees all statistics
-      const [totalBookings] = await db.query('SELECT COUNT(*) as count FROM bookings');
-      const [totalEvents] = await db.query('SELECT COUNT(*) as count FROM events');
-      const [totalUsers] = await db.query('SELECT COUNT(*) as count FROM users');
-      const [totalOrganizers] = await db.query('SELECT COUNT(*) as count FROM users WHERE role = "organizer"');
-      const [totalRegularUsers] = await db.query('SELECT COUNT(*) as count FROM users WHERE role = "user"');
-      const [totalAdmins] = await db.query('SELECT COUNT(*) as count FROM users WHERE role = "admin"');
-      const [pendingBookings] = await db.query('SELECT COUNT(*) as count FROM bookings WHERE status = "pending"');
-      const [confirmedBookings] = await db.query('SELECT COUNT(*) as count FROM bookings WHERE status = "confirmed"');
-      const [cancelledBookings] = await db.query('SELECT COUNT(*) as count FROM bookings WHERE status = "cancelled"');
-      const [totalRevenue] = await db.query('SELECT COALESCE(SUM(total_amount), 0) as revenue FROM bookings WHERE payment_status = "paid"');
-      
->>>>>>> 528176d1b1b8137b9693bd45934b116e176dcb70
       stats = {
         totalBookings: totalBookings[0].count,
         totalEvents: totalEvents[0].count,
         totalUsers: totalUsers[0].count,
         totalOrganizers: totalOrganizers[0].count,
-<<<<<<< HEAD
         pendingBookings: pendingBookings[0].count,
         confirmedBookings: confirmedBookings[0].count,
         cancelledBookings: cancelledBookings[0].count,
@@ -363,32 +340,36 @@ exports.getDashboardStats = async (req, res) => {
       };
 
     } else if (userRole === 'organizer') {
-      // Organizer sees statistics for their events only with proper validation
       const [myEvents] = await db.query('SELECT COUNT(*) as count FROM events WHERE organizer_id = ?', [userId]);
+
       const [myBookings] = await db.query(`
         SELECT COUNT(*) as count
         FROM bookings b
         JOIN events e ON b.event_id = e.id
         WHERE e.organizer_id = ?
       `, [userId]);
+
       const [myPendingBookings] = await db.query(`
         SELECT COUNT(*) as count
         FROM bookings b
         JOIN events e ON b.event_id = e.id
         WHERE e.organizer_id = ? AND b.status = "pending"
       `, [userId]);
+
       const [myConfirmedBookings] = await db.query(`
         SELECT COUNT(*) as count
         FROM bookings b
         JOIN events e ON b.event_id = e.id
         WHERE e.organizer_id = ? AND b.status = "confirmed"
       `, [userId]);
+
       const [myCancelledBookings] = await db.query(`
         SELECT COUNT(*) as count
         FROM bookings b
         JOIN events e ON b.event_id = e.id
         WHERE e.organizer_id = ? AND b.status = "cancelled"
       `, [userId]);
+
       const [myRevenue] = await db.query(`
         SELECT COALESCE(SUM(b.total_amount), 0) as revenue
         FROM bookings b
@@ -396,100 +377,41 @@ exports.getDashboardStats = async (req, res) => {
         WHERE e.organizer_id = ? AND b.payment_status = "paid" AND b.status != "cancelled"
       `, [userId]);
 
-      // Additional organizer stats
       const [upcomingEvents] = await db.query('SELECT COUNT(*) as count FROM events WHERE organizer_id = ? AND status = "upcoming"', [userId]);
       const [completedEvents] = await db.query('SELECT COUNT(*) as count FROM events WHERE organizer_id = ? AND status = "completed"', [userId]);
 
-=======
-        totalRegularUsers: totalRegularUsers[0].count,
-        totalAdmins: totalAdmins[0].count,
-        pendingBookings: pendingBookings[0].count,
-        confirmedBookings: confirmedBookings[0].count,
-        cancelledBookings: cancelledBookings[0].count,
-        totalRevenue: totalRevenue[0].revenue
-      };
-      
-    } else if (userRole === 'organizer') {
-      // Organizer sees statistics for their events only
-      const [myEvents] = await db.query('SELECT COUNT(*) as count FROM events WHERE organizer_id = ?', [userId]);
-      const [myBookings] = await db.query(`
-        SELECT COUNT(*) as count 
-        FROM bookings b 
-        JOIN events e ON b.event_id = e.id 
-        WHERE e.organizer_id = ?
-      `, [userId]);
-      const [myPendingBookings] = await db.query(`
-        SELECT COUNT(*) as count 
-        FROM bookings b 
-        JOIN events e ON b.event_id = e.id 
-        WHERE e.organizer_id = ? AND b.status = "pending"
-      `, [userId]);
-      const [myConfirmedBookings] = await db.query(`
-        SELECT COUNT(*) as count 
-        FROM bookings b 
-        JOIN events e ON b.event_id = e.id 
-        WHERE e.organizer_id = ? AND b.status = "confirmed"
-      `, [userId]);
-      const [myCancelledBookings] = await db.query(`
-        SELECT COUNT(*) as count 
-        FROM bookings b 
-        JOIN events e ON b.event_id = e.id 
-        WHERE e.organizer_id = ? AND b.status = "cancelled"
-      `, [userId]);
-      const [myRevenue] = await db.query(`
-        SELECT COALESCE(SUM(b.total_amount), 0) as revenue 
-        FROM bookings b 
-        JOIN events e ON b.event_id = e.id 
-        WHERE e.organizer_id = ? AND b.payment_status = "paid"
-      `, [userId]);
-      
->>>>>>> 528176d1b1b8137b9693bd45934b116e176dcb70
       stats = {
         myEvents: myEvents[0].count,
         totalBookings: myBookings[0].count,
         pendingBookings: myPendingBookings[0].count,
         confirmedBookings: myConfirmedBookings[0].count,
         cancelledBookings: myCancelledBookings[0].count,
-<<<<<<< HEAD
         upcomingEvents: upcomingEvents[0].count,
         completedEvents: completedEvents[0].count,
         totalRevenue: parseFloat(myRevenue[0].revenue) || 0
       };
 
-=======
-        totalRevenue: myRevenue[0].revenue
-      };
-      
->>>>>>> 528176d1b1b8137b9693bd45934b116e176dcb70
     } else {
-      // Regular user sees their own statistics
       const [myBookings] = await db.query('SELECT COUNT(*) as count FROM bookings WHERE user_id = ?', [userId]);
       const [myPendingBookings] = await db.query('SELECT COUNT(*) as count FROM bookings WHERE user_id = ? AND status = "pending"', [userId]);
       const [myConfirmedBookings] = await db.query('SELECT COUNT(*) as count FROM bookings WHERE user_id = ? AND status = "confirmed"', [userId]);
       const [myCancelledBookings] = await db.query('SELECT COUNT(*) as count FROM bookings WHERE user_id = ? AND status = "cancelled"', [userId]);
-<<<<<<< HEAD
-      const [mySpending] = await db.query('SELECT COALESCE(SUM(total_amount), 0) as spending FROM bookings WHERE user_id = ? AND payment_status = "paid" AND status != "cancelled"', [userId]);
 
-=======
-      const [mySpending] = await db.query('SELECT COALESCE(SUM(total_amount), 0) as spending FROM bookings WHERE user_id = ? AND payment_status = "paid"', [userId]);
-      
->>>>>>> 528176d1b1b8137b9693bd45934b116e176dcb70
+      const [mySpending] = await db.query(`
+        SELECT COALESCE(SUM(total_amount), 0) as spending
+        FROM bookings
+        WHERE user_id = ? AND payment_status = "paid" AND status != "cancelled"
+      `, [userId]);
+
       stats = {
         totalBookings: myBookings[0].count,
         pendingBookings: myPendingBookings[0].count,
         confirmedBookings: myConfirmedBookings[0].count,
         cancelledBookings: myCancelledBookings[0].count,
-<<<<<<< HEAD
         totalSpending: parseFloat(mySpending[0].spending) || 0
       };
     }
 
-=======
-        totalSpending: mySpending[0].spending
-      };
-    }
-    
->>>>>>> 528176d1b1b8137b9693bd45934b116e176dcb70
     res.json(stats);
   } catch (error) {
     console.error('Get dashboard stats error:', error);

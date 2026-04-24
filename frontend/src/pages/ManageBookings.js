@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { Container, Table, Badge, Button, Modal, Form, Alert, Row, Col, Card } from 'react-bootstrap';
 import { bookingsAPI } from '../services/api';
 import { AuthContext } from '../context/AuthContext';
+import { downloadCSV } from '../utils/csvExport';
 
 const ManageBookings = () => {
   const [bookings, setBookings] = useState([]);
@@ -158,7 +159,7 @@ const ManageBookings = () => {
         <Col md={3}>
           <Card className="text-center">
             <Card.Body>
-              <h3 className="text-success">${stats.revenue.toFixed(2)}</h3>
+              <h3 className="text-success">₹{stats.revenue.toFixed(2)}</h3>
               <p className="text-muted mb-0">Revenue</p>
             </Card.Body>
           </Card>
@@ -259,7 +260,7 @@ const ManageBookings = () => {
                 )}
                 <td>{formatDate(booking.event_date)}</td>
                 <td>{formatDate(booking.booking_date)}</td>
-                <td>${booking.total_amount}</td>
+                <td>₹{booking.total_amount}</td>
                 <td>{getStatusBadge(booking.status)}</td>
                 <td>{getPaymentBadge(booking.payment_status)}</td>
                 <td>
@@ -319,5 +320,3 @@ const ManageBookings = () => {
 };
 
 export default ManageBookings;
-
-import { downloadCSV } from '../utils/csvExport';

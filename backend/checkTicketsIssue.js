@@ -33,7 +33,7 @@ connection.query(`
     console.log(`  Event: ${booking.event_title}`);
     console.log(`  Status: ${booking.status}`);
     console.log(`  Payment Status: ${booking.payment_status}`);
-    console.log(`  Amount: $${booking.total_amount}`);
+    console.log(`  Amount: ₹${booking.total_amount}`);
     console.log(`  Ticket Number: ${booking.ticket_number || 'No ticket'}`);
     console.log('');
   });

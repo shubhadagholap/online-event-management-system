@@ -231,8 +231,8 @@ const Certificates = () => {
             <Card className="border-0 shadow-sm">
               <Card.Body className="text-center">
                 <h6 className="text-muted mb-2">Downloaded</h6>
-                <h2 className="text-success">{stats.downloaded_count}</h2>
-                <small className="text-muted">{stats.total_certificates > 0 ? ((stats.downloaded_count / stats.total_certificates) * 100).toFixed(0) : 0}%</small>
+                <h2 className="text-success">{stats.downloaded}</h2>
+                <small className="text-muted">{stats.total_certificates > 0 ? ((parseInt(stats.downloaded) / parseInt(stats.total_certificates)) * 100).toFixed(0) : 0}%</small>
               </Card.Body>
             </Card>
           </Col>
@@ -240,8 +240,8 @@ const Certificates = () => {
             <Card className="border-0 shadow-sm">
               <Card.Body className="text-center">
                 <h6 className="text-muted mb-2">Pending</h6>
-                <h2 className="text-warning">{stats.pending_count}</h2>
-                <small className="text-muted">{stats.total_certificates > 0 ? ((stats.pending_count / stats.total_certificates) * 100).toFixed(0) : 0}%</small>
+                <h2 className="text-warning">{stats.pending}</h2>
+                <small className="text-muted">{stats.total_certificates > 0 ? ((parseInt(stats.pending) / parseInt(stats.total_certificates)) * 100).toFixed(0) : 0}%</small>
               </Card.Body>
             </Card>
           </Col>

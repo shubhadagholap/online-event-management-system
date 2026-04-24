@@ -36,7 +36,7 @@ async function testAdminBookingsPage() {
       console.log('Organizer:', sampleBooking.organizer_name || 'N/A');
       console.log('Event Date:', sampleBooking.event_date);
       console.log('Booking Date:', sampleBooking.booking_date);
-      console.log('Amount: $' + sampleBooking.total_amount);
+      console.log('Amount: ₹' + sampleBooking.total_amount);
       console.log('Status:', sampleBooking.status);
       console.log('Payment:', sampleBooking.payment_status);
       
@@ -56,7 +56,7 @@ async function testAdminBookingsPage() {
       console.log(`Confirmed: ${stats.confirmed}`);
       console.log(`Pending: ${stats.pending}`);
       console.log(`Cancelled: ${stats.cancelled}`);
-      console.log(`Revenue: $${stats.revenue.toFixed(2)}`);
+      console.log(`Revenue: ₹${stats.revenue.toFixed(2)}`);
       
       console.log('\n✅ Admin bookings page should now work correctly!');
       console.log('\nTo test:');

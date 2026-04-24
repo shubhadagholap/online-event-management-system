@@ -187,7 +187,7 @@ i<!DOCTYPE html>
                                                 <p className="card-text text-muted small">📍 {event.location}</p>
                                                 <p className="card-text flex-grow-1">{event.description?.substring(0, 100)}...</p>
                                                 <div className="d-flex justify-content-between align-items-center mt-auto">
-                                                    <span className="h5 mb-0 text-primary">${event.price}</span>
+                                                    <span className="h5 mb-0 text-primary">₹{event.price}</span>
                                                     <button className="btn btn-primary btn-sm" onClick={() => setPage('event-' + event.id)}>View Details</button>
                                                 </div>
                                                 <div className="mt-2 text-muted small">
@@ -297,7 +297,7 @@ i<!DOCTYPE html>
                                             <p className="card-text text-muted small">📍 {event.location}</p>
                                             <p className="card-text flex-grow-1">{event.description?.substring(0, 100)}...</p>
                                             <div className="d-flex justify-content-between align-items-center mt-auto">
-                                                <span className="h5 mb-0 text-primary">${event.price}</span>
+                                                <span className="h5 mb-0 text-primary">₹{event.price}</span>
                                                 <button className="btn btn-primary btn-sm" onClick={() => setPage('event-' + event.id)}>View Details</button>
                                             </div>
                                         </div>

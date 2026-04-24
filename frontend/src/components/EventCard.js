@@ -69,7 +69,7 @@ const EventCard = ({ event }) => {
           {event.description?.substring(0, 100)}...
         </Card.Text>
         <div className="d-flex justify-content-between align-items-center mt-auto">
-          <span className="h5 mb-0 text-primary">${event.price}</span>
+          <span className="h5 mb-0 text-primary">₹{event.price}</span>
           <Link to={`/events/${event.id}`}>
             <Button variant="primary" size="sm">View Details</Button>
           </Link>
