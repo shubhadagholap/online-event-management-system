@@ -212,7 +212,7 @@ Upcoming Events
 │                 │ │                 │ │                 │
 │ Join us for...  │ │ The premier...  │ │ Annual city...  │
 │                 │ │                 │ │                 │
-│ $89.99          │ │ $299.00         │ │ $50.00          │
+│ ₹89.99          │ │ ₹299.00         │ │ ₹50.00          │
 │ [View Details]  │ │ [View Details]  │ │ [View Details]  │
 │ 5000/5000 seats │ │ 1500/1500 seats │ │ 10000/10000     │
 └─────────────────┘ └─────────────────┘ └─────────────────┘
@@ -230,7 +230,7 @@ Upcoming Events
 │                 │ │                 │ │                 │
 │ Develop your... │ │ Explore cont... │ │ Taste dishes... │
 │                 │ │                 │ │                 │
-│ $199.00         │ │ $20.00          │ │ $65.00          │
+│ ₹199.00         │ │ ₹20.00          │ │ ₹65.00          │
 │ [View Details]  │ │ [View Details]  │ │ [View Details]  │
 │ 500/500 seats   │ │ 300/300 seats   │ │ 2000/2000 seats │
 └─────────────────┘ └─────────────────┘ └─────────────────┘

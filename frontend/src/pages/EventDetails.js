@@ -134,7 +134,7 @@ const EventDetails = () => {
               <hr />
               <p><strong>Date & Time:</strong><br />{formatDate(event.date)}</p>
               <p><strong>Location:</strong><br />{event.location}</p>
-              <p><strong>Price:</strong><br /><span className="h4 text-primary">${event.price}</span></p>
+              <p><strong>Price:</strong><br /><span className="h4 text-primary">₹{event.price}</span></p>
               <p><strong>Available Seats:</strong><br />
                 {event.available_seats} / {event.capacity}
               </p>

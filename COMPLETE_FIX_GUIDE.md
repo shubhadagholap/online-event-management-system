@@ -114,58 +114,58 @@ add-business-education-events.bat
 ## New Events Added
 
 ### Business Events (5 new):
-1. **Startup Funding Workshop** - $99
+1. **Startup Funding Workshop** - ₹99
    - Learn funding strategies
    - Meet investors
    - Austin, TX
 
-2. **Sales & Marketing Bootcamp** - $299
+2. **Sales & Marketing Bootcamp** - ₹299
    - Modern sales techniques
    - Digital marketing
    - Chicago, IL
 
-3. **Financial Planning Seminar** - $149
+3. **Financial Planning Seminar** - ₹149
    - Investment strategies
    - Personal & business finance
    - New York, NY
 
-4. **Women in Business Summit** - $179
+4. **Women in Business Summit** - ₹179
    - Empowering women entrepreneurs
    - Networking opportunities
    - San Francisco, CA
 
-5. **Real Estate Investment Conference** - $249
+5. **Real Estate Investment Conference** - ₹249
    - Property management
    - Market trends
    - Miami, FL
 
 ### Education Events (6 new):
-1. **Python Programming for Beginners** - $199
+1. **Python Programming for Beginners** - ₹199
    - Learn Python from scratch
    - Hands-on coding
    - Seattle, WA
 
-2. **Data Science Masterclass** - $349
+2. **Data Science Masterclass** - ₹349
    - Machine learning
    - Data visualization
    - Boston, MA
 
-3. **Creative Writing Workshop** - $79
+3. **Creative Writing Workshop** - ₹79
    - Fiction & non-fiction
    - Professional authors
    - Portland, OR
 
-4. **Language Learning Expo** - $25
+4. **Language Learning Expo** - ₹25
    - Multiple languages
    - Free trial classes
    - Los Angeles, CA
 
-5. **STEM Education Fair** - $15
+5. **STEM Education Fair** - ₹15
    - Science & technology
    - For students & educators
    - Chicago, IL
 
-6. **Teacher Professional Development** - $129
+6. **Teacher Professional Development** - ₹129
    - Modern teaching methods
    - Classroom technology
    - Denver, CO

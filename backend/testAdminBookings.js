@@ -32,7 +32,7 @@ async function testAdminBookings() {
         console.log(`   User: ${booking.user_name} (${booking.user_email})`);
         console.log(`   Event: ${booking.event_title}`);
         console.log(`   Status: ${booking.status}/${booking.payment_status}`);
-        console.log(`   Amount: $${booking.total_amount}`);
+        console.log(`   Amount: ₹${booking.total_amount}`);
         console.log(`   Ticket: ${booking.ticket_number || 'N/A'}`);
         console.log('');
       });
@@ -65,7 +65,7 @@ async function testAdminBookings() {
       console.log(`Confirmed: ${stats.confirmed}`);
       console.log(`Pending: ${stats.pending}`);
       console.log(`Cancelled: ${stats.cancelled}`);
-      console.log(`Revenue: $${stats.revenue.toFixed(2)}`);
+      console.log(`Revenue: ₹${stats.revenue.toFixed(2)}`);
       
     } else {
       console.log('❌ No bookings returned - this is the problem!');

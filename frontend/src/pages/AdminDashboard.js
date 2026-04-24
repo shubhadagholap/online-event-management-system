@@ -147,7 +147,7 @@ const AdminDashboard = () => {
               <div className="text-success mb-2" style={{ fontSize: '2rem' }}>
                 💰
               </div>
-              <h3 className="text-success">${stats.totalRevenue.toFixed(2)}</h3>
+              <h3 className="text-success">₹{stats.totalRevenue.toFixed(2)}</h3>
               <p className="text-muted mb-0">Total Revenue</p>
             </Card.Body>
           </Card>

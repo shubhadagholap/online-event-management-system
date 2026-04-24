@@ -28,7 +28,7 @@ exports.getAllEvents = async (req, res) => {
       params.push(status);
     }
 
-    query += ' ORDER BY e.date DESC';
+    query += ' ORDER BY e.date ASC, e.created_at DESC';
 
     const [events] = await db.query(query, params);
     res.json(events);
@@ -68,7 +68,7 @@ exports.getOrganizerEvents = async (req, res) => {
       FROM events e 
       LEFT JOIN categories c ON e.category_id = c.id 
       WHERE e.organizer_id = ?
-      ORDER BY e.date DESC
+      ORDER BY e.date ASC, e.created_at DESC
     `, [req.user.id]);
 
     res.json(events);

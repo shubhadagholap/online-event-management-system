@@ -99,7 +99,7 @@ const Home = () => {
               <Card className="text-center h-100 shadow-sm border-success">
                 <Card.Body>
                   <div className="text-success mb-2" style={{ fontSize: '1.5rem' }}>💰</div>
-                  <h4 className="text-success">${(parseFloat(adminStats.totalRevenue) || 0).toFixed(2)}</h4>
+                  <h4 className="text-success">₹{(parseFloat(adminStats.totalRevenue) || 0).toFixed(2)}</h4>
                   <small className="text-muted">Total Revenue</small>
                 </Card.Body>
               </Card>

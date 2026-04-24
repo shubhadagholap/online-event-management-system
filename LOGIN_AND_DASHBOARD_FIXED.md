@@ -40,7 +40,7 @@
 - Total Users: 7
 - Total Organizers: 4
 - Total Bookings: 15
-- Total Revenue: $7,919.99
+- Total Revenue: ₹7,919.99
 - Pending/Confirmed/Cancelled breakdowns
 
 ### Organizer Dashboard

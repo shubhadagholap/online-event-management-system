@@ -42,7 +42,7 @@
 - ✅ Total Users: 9 (correct)
 - ✅ Total Events: 17
 - ✅ Total Bookings: 14
-- ✅ Total Revenue: $9,069.99
+- ✅ Total Revenue: ₹9,069.99
 - ✅ All counts accurate
 
 ### Admin Capabilities
@@ -189,7 +189,7 @@ reset-password.bat
 - [x] Shows correct user count (9)
 - [x] Shows correct event count (17)
 - [x] Shows correct booking count (14)
-- [x] Shows correct revenue ($9,069.99)
+- [x] Shows correct revenue (₹9,069.99)
 - [x] All statistics accurate
 
 ### Delete Functionality
@@ -292,7 +292,7 @@ curl http://localhost:5000/api/health
 - Total Users: 9 (2 admins, 3 organizers, 4 users)
 - Total Events: 17
 - Total Bookings: 14
-- Total Revenue: $9,069.99
+- Total Revenue: ₹9,069.99
 - Deleted Users: 4 (IDs 5, 6, 7, 11)
 
 ### Features

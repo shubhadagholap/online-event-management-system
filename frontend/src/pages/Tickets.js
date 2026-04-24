@@ -42,7 +42,7 @@ Ticket Number: ${ticket.ticket_number}
 Event: ${ticket.event_title}
 Date: ${formatDate(ticket.event_date)}
 Location: ${ticket.event_location}
-Amount Paid: $${ticket.total_amount}
+Amount Paid: ₹${ticket.total_amount}
 Status: ${ticket.status.toUpperCase()}
 ============================================
 Please present this ticket at the venue.
@@ -119,7 +119,7 @@ Please present this ticket at the venue.
                     </Card.Text>
                     
                     <Card.Text className="mb-3">
-                      <strong className="text-primary">${ticket.total_amount}</strong>
+                      <strong className="text-primary">₹{ticket.total_amount}</strong>
                     </Card.Text>
                     
                     <div className="d-grid gap-2">
@@ -195,7 +195,7 @@ Please present this ticket at the venue.
               <Row className="mb-3">
                 <Col md={6}>
                   <strong>Amount Paid:</strong>
-                  <p className="h5 text-success">${selectedTicket.total_amount}</p>
+                  <p className="h5 text-success">₹{selectedTicket.total_amount}</p>
                 </Col>
                 <Col md={6}>
                   <strong>Payment Status:</strong>

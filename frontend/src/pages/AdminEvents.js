@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Button, Table, Modal, Form, Alert, Badge, Card } from 'react-bootstrap';
 import { eventsAPI, categoriesAPI, usersAPI } from '../services/api';
+import { downloadCSV } from '../utils/csvExport';
 
 const AdminEvents = () => {
   const [events, setEvents] = useState([]);
@@ -274,7 +275,7 @@ const AdminEvents = () => {
               <td>{event.location}</td>
               <td>{event.capacity}</td>
               <td>{event.available_seats}</td>
-              <td>${event.price}</td>
+              <td>₹{event.price}</td>
               <td>{event.category_name || 'N/A'}</td>
               <td>{getStatusBadge(event.status)}</td>
               <td>
@@ -410,7 +411,7 @@ const AdminEvents = () => {
               </Col>
               <Col md={4}>
                 <Form.Group className="mb-3">
-                  <Form.Label>Price ($) *</Form.Label>
+                  <Form.Label>Price (₹) *</Form.Label>
                   <Form.Control
                     type="number"
                     step="0.01"
@@ -491,5 +492,3 @@ const AdminEvents = () => {
 };
 
 export default AdminEvents;
-
-import { downloadCSV } from '../utils/csvExport';

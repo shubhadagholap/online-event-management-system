@@ -96,7 +96,7 @@ const MyBookings = () => {
                 <td>{booking.event_title}</td>
                 <td>{formatDate(booking.event_date)}</td>
                 <td>{booking.event_location}</td>
-                <td>${booking.total_amount}</td>
+                <td>₹{booking.total_amount}</td>
                 <td>
                   <Badge bg={
                     booking.status === 'confirmed' ? 'success' : 

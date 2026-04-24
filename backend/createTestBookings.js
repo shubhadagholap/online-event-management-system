@@ -43,7 +43,7 @@ testBookings.forEach((booking, index) => {
       if (err) {
         console.error(`Error creating booking ${index + 1}:`, err.message);
       } else {
-        console.log(`✅ Created booking ${index + 1}: ${booking.status}/${booking.payment_status} - $${booking.total_amount}`);
+        console.log(`✅ Created booking ${index + 1}: ${booking.status}/${booking.payment_status} - ₹${booking.total_amount}`);
         
         // Create ticket for the booking
         const ticketNumber = `TKT-${Date.now()}-${result.insertId}`;
@@ -84,7 +84,7 @@ testBookings.forEach((booking, index) => {
               console.log('\n=== RECENT BOOKINGS ===');
               results.forEach(booking => {
                 console.log(`Booking ${booking.id}: ${booking.event_title} (${booking.organizer_name})`);
-                console.log(`  Status: ${booking.status} / Payment: ${booking.payment_status} / Amount: $${booking.total_amount}`);
+                console.log(`  Status: ${booking.status} / Payment: ${booking.payment_status} / Amount: ₹${booking.total_amount}`);
               });
               
               // Count pending bookings
