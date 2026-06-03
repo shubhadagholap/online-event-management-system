@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Container, Row, Col, Card, Button, ListGroup } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
-import { eventsAPI, usersAPI, bookingsAPI } from '../services/api';
+import { eventsAPI, usersAPI, analyticsAPI } from '../services/api';
 import { AuthContext } from '../context/AuthContext';
 
 const AdminDashboard = () => {
@@ -33,26 +33,30 @@ const AdminDashboard = () => {
 
   const fetchDashboardData = async () => {
     try {
-      // Get dashboard stats from the improved API endpoint
-      const statsRes = await bookingsAPI.getDashboardStats();
-      const stats = statsRes.data;
+      // Get dashboard stats from analytics API for consistent totals
+      const analyticsRes = await analyticsAPI.getAdminAnalytics();
+      const statsData = analyticsRes.data || {};
+      // Also get total organizers count from users endpoint
+      const usersRes = await usersAPI.getAll();
+      const allUsers = usersRes.data || [];
+      const organizerCount = allUsers.filter(u => u.role === 'organizer').length;
 
       // Get events for recent events display
       const eventsRes = await eventsAPI.getAll();
       const events = eventsRes.data;
 
-      // Use API stats directly without fallback logic that causes inconsistencies
+      // Map analytics response to dashboard-friendly stats
       setStats({
-        totalEvents: stats.totalEvents || 0,
-        upcomingEvents: stats.upcomingEvents || 0,
-        completedEvents: stats.completedEvents || 0,
-        totalUsers: stats.totalUsers || 0,
-        totalOrganizers: stats.totalOrganizers || 0,
-        totalBookings: stats.totalBookings || 0,
-        pendingBookings: stats.pendingBookings || 0,
-        confirmedBookings: stats.confirmedBookings || 0,
-        cancelledBookings: stats.cancelledBookings || 0,
-        totalRevenue: stats.totalRevenue || 0
+        totalEvents: statsData.events?.total_events || 0,
+        upcomingEvents: statsData.events?.upcoming || 0,
+        completedEvents: statsData.events?.completed || 0,
+        totalUsers: statsData.users?.total_users || 0,
+        totalOrganizers: organizerCount || 0,
+        totalBookings: statsData.bookings?.total_bookings || 0,
+        pendingBookings: statsData.bookings?.pending || 0,
+        confirmedBookings: statsData.bookings?.confirmed || 0,
+        cancelledBookings: statsData.bookings?.cancelled || 0,
+        totalRevenue: parseFloat(statsData.revenue?.total_revenue) || 0
       });
 
       // Get recent events (last 5)

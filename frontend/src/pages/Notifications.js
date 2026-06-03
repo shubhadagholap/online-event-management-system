@@ -29,11 +29,16 @@ const Notifications = () => {
     try {
       setLoading(true);
       const notifsResponse = await notificationsAPI.getAll();
-      setNotifications(notifsResponse.data);
+      // Normalize is_read to boolean to prevent counting issues
+      const normalized = (notifsResponse.data || []).map(n => ({
+        ...n,
+        is_read: n.is_read === true || n.is_read === 1 || n.is_read === '1'
+      }));
+      setNotifications(normalized);
 
       if (isAdmin) {
         const announcementsResponse = await notificationsAPI.getAnnouncements();
-        setAnnouncements(announcementsResponse.data);
+        setAnnouncements(announcementsResponse.data || []);
       }
     } catch (error) {
       console.error('Error fetching notifications:', error);
@@ -95,18 +100,20 @@ const Notifications = () => {
         </Alert>
       )}
 
-      <div className="mb-3">
+      <div className="tab-button-row align-items-center">
         <Button
           variant={activeTab === 'notifications' ? 'primary' : 'outline-primary'}
           onClick={() => setActiveTab('notifications')}
-          className="me-2"
+          className="tab-button"
         >
-          My Notifications ({notifications.filter(n => !n.is_read).length})
+          My Notifications ({notifications.length})
         </Button>
+        <small className="text-muted ms-2 me-2">{notifications.filter(n => !n.is_read).length} unread</small>
         {isAdmin && (
           <Button
             variant={activeTab === 'announcements' ? 'primary' : 'outline-primary'}
             onClick={() => setActiveTab('announcements')}
+            className="tab-button"
           >
             Announcements
           </Button>

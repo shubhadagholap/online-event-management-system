@@ -23,6 +23,12 @@ const Certificates = () => {
   const checkUserRole = () => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     setUserRole(user.role);
+    // Default tab: organizers/admins should land on organizer view
+    if (user.role === 'organizer' || user.role === 'admin') {
+      setActiveTab('organizer-certificates');
+    } else {
+      setActiveTab('my-certificates');
+    }
   };
 
   const fetchCertificates = async () => {
@@ -103,29 +109,33 @@ const Certificates = () => {
       )}
 
       {userRole === 'organizer' || userRole === 'admin' ? (
-        <div className="mb-3">
-          <Button
-            variant={activeTab === 'my-certificates' ? 'primary' : 'outline-primary'}
-            onClick={() => setActiveTab('my-certificates')}
-            className="me-2"
-          >
-            My Certificates
-          </Button>
+        <div className="tab-button-row">
           <Button
             variant={activeTab === 'organizer-certificates' ? 'primary' : 'outline-primary'}
             onClick={() => setActiveTab('organizer-certificates')}
-            className="me-2"
+            className="tab-button"
           >
             Issued Certificates
           </Button>
           <Button
             variant={activeTab === 'stats' ? 'primary' : 'outline-primary'}
             onClick={() => setActiveTab('stats')}
+            className="tab-button"
           >
             Statistics
           </Button>
         </div>
-      ) : null}
+      ) : (
+        <div className="tab-button-row">
+          <Button
+            variant={activeTab === 'my-certificates' ? 'primary' : 'outline-primary'}
+            onClick={() => setActiveTab('my-certificates')}
+            className="tab-button"
+          >
+            My Certificates
+          </Button>
+        </div>
+      )}
 
       {activeTab === 'my-certificates' && (
         <Row>

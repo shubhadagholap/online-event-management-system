@@ -14,7 +14,7 @@ const AdminEvents = () => {
     price: 0, category_id: '', organizer_id: '', status: 'upcoming', image_url: ''
   });
   const [message, setMessage] = useState({ type: '', text: '' });
-  const [stats, setStats] = useState({ total: 0, upcoming: 0, ongoing: 0, completed: 0 });
+  const [stats, setStats] = useState({ total: 0, upcoming: 0, ongoing: 0, completed: 0, cancelled: 0 });
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
@@ -27,11 +27,11 @@ const AdminEvents = () => {
 
   const fetchEvents = async () => {
     try {
-      const params = {
-        search: searchTerm,
-        status: statusFilter,
-        category: categoryFilter
-      };
+      const params = {};
+      if (searchTerm) params.search = searchTerm;
+      if (statusFilter && statusFilter !== 'all') params.status = statusFilter;
+      if (categoryFilter && categoryFilter !== 'all') params.category = categoryFilter;
+
       const response = await eventsAPI.getAll(params);
       setEvents(response.data);
       calculateStats(response.data);
@@ -45,7 +45,8 @@ const AdminEvents = () => {
       total: eventsData.length,
       upcoming: eventsData.filter(e => e.status === 'upcoming').length,
       ongoing: eventsData.filter(e => e.status === 'ongoing').length,
-      completed: eventsData.filter(e => e.status === 'completed').length
+      completed: eventsData.filter(e => e.status === 'completed').length,
+      cancelled: eventsData.filter(e => e.status === 'cancelled').length
     });
   };
 
@@ -150,7 +151,7 @@ const AdminEvents = () => {
     <Container className="mt-4 mb-5">
       <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4">
         <h2>Manage All Events</h2>
-        <Button variant="primary" onClick={handleAdd} className="mt-2 mt-md-0">
+        <Button variant="primary" onClick={handleAdd} className="equal-button mt-2 mt-md-0">
           <i className="bi bi-plus-circle me-2"></i>
           Create Event
         </Button>
@@ -190,8 +191,11 @@ const AdminEvents = () => {
           </Form.Select>
         </Col>
         <Col md={2} className="mb-2 text-end">
-          <Button variant="outline-secondary" size="sm" onClick={() => {
-            const params = new URLSearchParams({ search: searchTerm, status: statusFilter, category: categoryFilter });
+          <Button variant="outline-secondary" size="sm" className="equal-button" onClick={() => {
+            const params = new URLSearchParams();
+            if (searchTerm) params.set('search', searchTerm);
+            if (statusFilter && statusFilter !== 'all') params.set('status', statusFilter);
+            if (categoryFilter && categoryFilter !== 'all') params.set('category', categoryFilter);
             downloadCSV(`http://localhost:5000/api/events/export?${params.toString()}`, 'events.csv');
           }}>
             Export CSV
@@ -201,7 +205,7 @@ const AdminEvents = () => {
 
       {/* Stats Cards */}
       <Row className="mb-4">
-        <Col md={3}>
+        <Col md={2}>
           <Card className="text-center">
             <Card.Body>
               <h3 className="text-primary">{stats.total}</h3>
@@ -209,7 +213,7 @@ const AdminEvents = () => {
             </Card.Body>
           </Card>
         </Col>
-        <Col md={3}>
+        <Col md={2}>
           <Card className="text-center">
             <Card.Body>
               <h3 className="text-success">{stats.upcoming}</h3>
@@ -217,7 +221,7 @@ const AdminEvents = () => {
             </Card.Body>
           </Card>
         </Col>
-        <Col md={3}>
+        <Col md={2}>
           <Card className="text-center">
             <Card.Body>
               <h3 className="text-warning">{stats.ongoing}</h3>
@@ -225,11 +229,19 @@ const AdminEvents = () => {
             </Card.Body>
           </Card>
         </Col>
-        <Col md={3}>
+        <Col md={2}>
           <Card className="text-center">
             <Card.Body>
               <h3 className="text-secondary">{stats.completed}</h3>
               <p className="text-muted mb-0">Completed</p>
+            </Card.Body>
+          </Card>
+        </Col>
+        <Col md={2}>
+          <Card className="text-center">
+            <Card.Body>
+              <h3 className="text-danger">{stats.cancelled}</h3>
+              <p className="text-muted mb-0">Cancelled</p>
             </Card.Body>
           </Card>
         </Col>

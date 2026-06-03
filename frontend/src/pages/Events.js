@@ -74,9 +74,9 @@ const Events = () => {
     
     // Update URL params
     const params = new URLSearchParams();
-    if (newFilters.search) params.set('search', newFilters.search);
-    if (newFilters.category) params.set('category', newFilters.category);
-    if (newFilters.status) params.set('status', newFilters.status);
+    Object.entries(newFilters).forEach(([key, val]) => {
+      if (val) params.set(key, val);
+    });
     
     setSearchParams(params);
   };
@@ -140,6 +140,7 @@ const Events = () => {
             <option value="upcoming">Upcoming</option>
             <option value="ongoing">Ongoing</option>
             <option value="completed">Completed</option>
+            <option value="cancelled">Cancelled</option>
           </Form.Select>
         </Col>
       </Row>

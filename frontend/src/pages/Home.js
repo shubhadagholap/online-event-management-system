@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Container, Row, Col, Button, Card, Badge } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import { eventsAPI, bookingsAPI } from '../services/api';
+import { eventsAPI, analyticsAPI } from '../services/api';
 import { AuthContext } from '../context/AuthContext';
 import EventCard from '../components/EventCard';
 
@@ -31,7 +31,7 @@ const Home = () => {
 
   const fetchAdminStats = async () => {
     try {
-      const response = await bookingsAPI.getDashboardStats();
+      const response = await analyticsAPI.getAdminAnalytics();
       setAdminStats(response.data);
     } catch (error) {
       console.error('Error fetching admin stats:', error);
@@ -67,7 +67,7 @@ const Home = () => {
               <Card className="text-center h-100 shadow-sm border-primary">
                 <Card.Body>
                   <div className="text-primary mb-2" style={{ fontSize: '1.5rem' }}>📅</div>
-                  <h4 className="text-primary">{adminStats.totalEvents}</h4>
+                  <h4 className="text-primary">{adminStats.events?.total_events || 0}</h4>
                   <small className="text-muted">Total Events</small>
                 </Card.Body>
               </Card>
@@ -76,7 +76,7 @@ const Home = () => {
               <Card className="text-center h-100 shadow-sm border-info">
                 <Card.Body>
                   <div className="text-info mb-2" style={{ fontSize: '1.5rem' }}>👥</div>
-                  <h4 className="text-info">{adminStats.totalUsers}</h4>
+                  <h4 className="text-info">{adminStats.users?.total_users || 0}</h4>
                   <small className="text-muted">Total Users</small>
                 </Card.Body>
               </Card>
@@ -85,13 +85,16 @@ const Home = () => {
               <Card className="text-center h-100 shadow-sm border-warning">
                 <Card.Body>
                   <div className="text-warning mb-2" style={{ fontSize: '1.5rem' }}>🎫</div>
-                  <h4 className="text-warning">{adminStats.totalBookings}</h4>
+                  <h4 className="text-warning">{adminStats.bookings?.total_bookings || 0}</h4>
                   <small className="text-muted">Total Bookings</small>
-                  {adminStats.pendingBookings > 0 && (
-                    <div className="mt-1">
-                      <Badge bg="warning">{adminStats.pendingBookings} pending</Badge>
-                    </div>
-                  )}
+                  <div className="mt-1 d-flex gap-2 justify-content-center flex-wrap">
+                    {adminStats.bookings?.pending > 0 && (
+                      <Badge bg="warning">{adminStats.bookings.pending} pending</Badge>
+                    )}
+                    {adminStats.bookings?.cancelled > 0 && (
+                      <Badge bg="danger">{adminStats.bookings.cancelled} cancelled</Badge>
+                    )}
+                  </div>
                 </Card.Body>
               </Card>
             </Col>
@@ -99,7 +102,7 @@ const Home = () => {
               <Card className="text-center h-100 shadow-sm border-success">
                 <Card.Body>
                   <div className="text-success mb-2" style={{ fontSize: '1.5rem' }}>💰</div>
-                  <h4 className="text-success">₹{(parseFloat(adminStats.totalRevenue) || 0).toFixed(2)}</h4>
+                  <h4 className="text-success">₹{(parseFloat(adminStats.revenue?.total_revenue) || 0).toFixed(2)}</h4>
                   <small className="text-muted">Total Revenue</small>
                 </Card.Body>
               </Card>

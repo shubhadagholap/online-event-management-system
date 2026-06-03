@@ -111,7 +111,7 @@ exports.getAllPayments = async (req, res) => {
       query += ` AND (u.name LIKE ? OR u.email LIKE ? OR e.title LIKE ?)`;
       params.push(`%${search}%`, `%${search}%`, `%${search}%`);
     }
-    if (status) {
+    if (status && status !== 'all') {
       query += ` AND p.status = ?`;
       params.push(status);
     }
@@ -146,7 +146,7 @@ exports.exportPaymentsCSV = async (req, res) => {
       query += ` AND (u.name LIKE ? OR u.email LIKE ? OR e.title LIKE ?)`;
       params.push(`%${search}%`, `%${search}%`, `%${search}%`);
     }
-    if (status) {
+    if (status && status !== 'all') {
       query += ` AND p.status = ?`;
       params.push(status);
     }

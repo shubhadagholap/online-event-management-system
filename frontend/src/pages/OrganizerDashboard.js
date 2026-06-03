@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Container, Row, Col, Card, Button } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import { bookingsAPI } from '../services/api';
+import { analyticsAPI } from '../services/api';
 import { AuthContext } from '../context/AuthContext';
 
 const OrganizerDashboard = () => {
@@ -30,25 +30,21 @@ const OrganizerDashboard = () => {
 
   const fetchStats = async () => {
     try {
-      const response = await bookingsAPI.getDashboardStats();
-      const data = response.data;
-      
-      // Ensure all values are properly handled
+      const response = await analyticsAPI.getOrganizerAnalytics();
+      const data = response.data || {};
       setStats({
-        myEvents: data.myEvents || 0,
-        totalBookings: data.totalBookings || 0,
-        totalRevenue: data.totalRevenue || 0,
-        pendingBookings: data.pendingBookings || 0,
-        confirmedBookings: data.confirmedBookings || 0,
-        cancelledBookings: data.cancelledBookings || 0,
-        upcomingEvents: data.upcomingEvents || 0,
-        completedEvents: data.completedEvents || 0
+        myEvents: data.myEvents?.total_events || data.myEvents || 0,
+        totalBookings: data.myBookings?.total_bookings || data.myBookings || 0,
+        totalRevenue: parseFloat(data.myRevenue?.total_revenue || data.myRevenue?.revenue || data.myRevenue) || 0,
+        pendingBookings: data.myBookings?.pending || 0,
+        confirmedBookings: data.myBookings?.confirmed || 0,
+        cancelledBookings: data.myBookings?.cancelled || 0,
+        upcomingEvents: data.eventAnalytics ? data.eventAnalytics.filter(e => e.status === 'upcoming').length : 0,
+        completedEvents: data.eventAnalytics ? data.eventAnalytics.filter(e => e.status === 'completed').length : 0
       });
-      
       setLoading(false);
     } catch (error) {
       console.error('Error fetching stats:', error);
-      // If 401 error, redirect to login
       if (error.response?.status === 401) {
         logout();
         navigate('/login');
@@ -86,7 +82,7 @@ const OrganizerDashboard = () => {
         <Col md={4} className="mb-4">
           <Card className="dashboard-card">
             <Card.Body>
-              <h6 className="text-muted">My Events</h6>
+              <h6 className="text-muted">{user?.role === 'admin' ? 'Total Events' : 'My Events'}</h6>
               <h2>{stats.myEvents}</h2>
               <small className="text-success">{stats.upcomingEvents} upcoming</small>
             </Card.Body>
@@ -104,7 +100,7 @@ const OrganizerDashboard = () => {
           <Card className="dashboard-card">
             <Card.Body>
               <h6 className="text-muted">Total Revenue</h6>
-              <h2>${stats.totalRevenue.toFixed(2)}</h2>
+              <h2>₹{stats.totalRevenue.toFixed(2)}</h2>
             </Card.Body>
           </Card>
         </Col>

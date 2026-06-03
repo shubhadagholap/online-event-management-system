@@ -25,7 +25,14 @@ const Feedback = () => {
 
   const checkUserRole = () => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
-    setUserRole(user.role);
+    const role = user.role;
+    setUserRole(role);
+    // Default tab based on role: regular users can submit, others see organizer feedback
+    if (role === 'user') {
+      setActiveTab('submit');
+    } else {
+      setActiveTab('organizer');
+    }
   };
 
   const fetchFeedback = async () => {
@@ -100,7 +107,7 @@ const Feedback = () => {
     <Container className="mt-4 mb-5">
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2>⭐ Feedback & Ratings</h2>
-        {activeTab === 'submit' && (
+        {userRole === 'user' && activeTab === 'submit' && (
           <Button variant="primary" onClick={() => setShowModal(true)}>Submit Feedback</Button>
         )}
       </div>
@@ -111,25 +118,30 @@ const Feedback = () => {
         </Alert>
       )}
 
-      <div className="mb-3">
-        <Button
-          variant={activeTab === 'submit' ? 'primary' : 'outline-primary'}
-          onClick={() => setActiveTab('submit')}
-          className="me-2"
-        >
-          Submit Feedback
-        </Button>
-        <Button
-          variant={activeTab === 'my-feedback' ? 'primary' : 'outline-primary'}
-          onClick={() => setActiveTab('my-feedback')}
-          className="me-2"
-        >
-          My Feedback
-        </Button>
-        {userRole === 'organizer' && (
+      <div className="tab-button-row">
+        {userRole === 'user' && (
+          <Button
+            variant={activeTab === 'submit' ? 'primary' : 'outline-primary'}
+            onClick={() => setActiveTab('submit')}
+            className="tab-button"
+          >
+            Submit Feedback
+          </Button>
+        )}
+        {userRole === 'user' && (
+          <Button
+            variant={activeTab === 'my-feedback' ? 'primary' : 'outline-primary'}
+            onClick={() => setActiveTab('my-feedback')}
+            className="tab-button"
+          >
+            My Feedback
+          </Button>
+        )}
+        {(userRole === 'organizer' || userRole === 'admin') && (
           <Button
             variant={activeTab === 'organizer' ? 'primary' : 'outline-primary'}
             onClick={() => setActiveTab('organizer')}
+            className="tab-button"
           >
             Feedback on My Events
           </Button>

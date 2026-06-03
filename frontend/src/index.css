@@ -75,6 +75,11 @@ code {
   cursor: pointer;
 }
 
+/* Equal action buttons */
+.equal-button {
+  min-width: 150px;
+}
+
 /* Button Enhancements */
 .btn-primary {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -83,6 +88,21 @@ code {
 
 .btn-primary:hover {
   background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+}
+
+.tab-button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.tab-button-row .tab-button {
+  min-width: 140px;
+  flex: 1 1 150px;
+  white-space: nowrap;
 }
 
 /* Badge Enhancements */

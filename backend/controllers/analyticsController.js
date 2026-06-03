@@ -4,42 +4,36 @@ const db = require('../config/db');
 exports.getAdminAnalytics = async (req, res) => {
   try {
     const { from_date, to_date } = req.query;
-    let dateFilter = '';
-    const params = [];
-
-    if (from_date && to_date) {
-      dateFilter = ' AND DATE(e.date) BETWEEN ? AND ? ';
-      params.push(from_date, to_date);
-    }
+    const hasRange = from_date && to_date;
 
     // Total revenue
-    const [revenue] = await db.query(
-      `SELECT COALESCE(SUM(p.amount), 0) as total_revenue FROM payments p
-       WHERE p.status = 'completed' AND DATE(p.payment_date) >= DATE_SUB(NOW(), INTERVAL 30 DAY)`
-    );
+    const revenueQuery = `SELECT COALESCE(SUM(p.amount), 0) as total_revenue FROM payments p
+      WHERE p.status = 'completed' ${hasRange ? 'AND DATE(p.payment_date) BETWEEN ? AND ?' : ''}`;
+    const revenueParams = hasRange ? [from_date, to_date] : [];
+    const [revenue] = await db.query(revenueQuery, revenueParams);
 
     // Total bookings
-    const [bookings] = await db.query(
-      `SELECT COUNT(*) as total_bookings, 
+    const bookingsQuery = `SELECT COUNT(*) as total_bookings,
         SUM(CASE WHEN status = 'confirmed' THEN 1 ELSE 0 END) as confirmed,
         SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending,
         SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) as cancelled
-      FROM bookings WHERE DATE(booking_date) >= DATE_SUB(NOW(), INTERVAL 30 DAY)`
-    );
+      FROM bookings ${hasRange ? 'WHERE DATE(booking_date) BETWEEN ? AND ?' : ''}`;
+    const bookingsParams = hasRange ? [from_date, to_date] : [];
+    const [bookings] = await db.query(bookingsQuery, bookingsParams);
 
     // Total events
-    const [events] = await db.query(
-      `SELECT COUNT(*) as total_events,
+    const eventsQuery = `SELECT COUNT(*) as total_events,
         SUM(CASE WHEN status = 'upcoming' THEN 1 ELSE 0 END) as upcoming,
         SUM(CASE WHEN status = 'ongoing' THEN 1 ELSE 0 END) as ongoing,
         SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed
-      FROM events WHERE DATE(created_at) >= DATE_SUB(NOW(), INTERVAL 30 DAY)`
-    );
+      FROM events ${hasRange ? 'WHERE DATE(created_at) BETWEEN ? AND ?' : ''}`;
+    const eventsParams = hasRange ? [from_date, to_date] : [];
+    const [events] = await db.query(eventsQuery, eventsParams);
 
     // User registrations
-    const [users] = await db.query(
-      `SELECT COUNT(*) as total_users FROM users WHERE DATE(created_at) >= DATE_SUB(NOW(), INTERVAL 30 DAY)`
-    );
+    const usersQuery = `SELECT COUNT(*) as total_users FROM users ${hasRange ? 'WHERE DATE(created_at) BETWEEN ? AND ?' : ''}`;
+    const usersParams = hasRange ? [from_date, to_date] : [];
+    const [users] = await db.query(usersQuery, usersParams);
 
     // Top events by bookings
     const [topEvents] = await db.query(
@@ -77,10 +71,12 @@ exports.getOrganizerAnalytics = async (req, res) => {
       [organizer_id]
     );
 
-    // Total bookings
+    // Total bookings and status breakdown
     const [myBookings] = await db.query(
       `SELECT COUNT(*) as total_bookings,
-        SUM(CASE WHEN b.status = 'confirmed' THEN 1 ELSE 0 END) as confirmed
+        SUM(CASE WHEN b.status = 'confirmed' THEN 1 ELSE 0 END) as confirmed,
+        SUM(CASE WHEN b.status = 'pending' THEN 1 ELSE 0 END) as pending,
+        SUM(CASE WHEN b.status = 'cancelled' THEN 1 ELSE 0 END) as cancelled
       FROM bookings b
       JOIN events e ON b.event_id = e.id
       WHERE e.organizer_id = ?`,

@@ -5,10 +5,10 @@ exports.getAllBookings = async (req, res) => {
   try {
     const { search, status, payment } = req.query;
     let query = `
-      SELECT b.*, e.title as event_title, e.date as event_date, e.location as event_location,
-             u.name as user_name, u.email as user_email,
-             organizer.name as organizer_name, organizer.email as organizer_email,
-             t.ticket_number
+            SELECT b.*, e.title as event_title, e.date as event_date, e.location as event_location,
+              u.name as user_name, u.email as user_email,
+              organizer.name as organizer_name, organizer.email as organizer_email,
+              COALESCE(t.ticket_number, '') as ticket_number
       FROM bookings b
       JOIN events e ON b.event_id = e.id
       JOIN users u ON b.user_id = u.id
@@ -31,7 +31,7 @@ exports.getAllBookings = async (req, res) => {
       params.push(payment);
     }
 
-    query += ' ORDER BY b.created_at DESC';
+    query += ' ORDER BY b.booking_date DESC';
 
     const [bookings] = await db.query(query, params);
     res.json(bookings);
@@ -45,8 +45,8 @@ exports.getAllBookings = async (req, res) => {
 exports.getUserBookings = async (req, res) => {
   try {
     const [bookings] = await db.query(`
-      SELECT b.*, e.title as event_title, e.date as event_date, e.location as event_location,
-             c.name as category_name, t.ticket_number
+            SELECT b.*, e.title as event_title, e.date as event_date, e.location as event_location,
+              c.name as category_name, COALESCE(t.ticket_number, '') as ticket_number
       FROM bookings b
       JOIN events e ON b.event_id = e.id
       LEFT JOIN categories c ON e.category_id = c.id
@@ -66,7 +66,7 @@ exports.getUserBookings = async (req, res) => {
 exports.getOrganizerBookings = async (req, res) => {
   try {
     const [bookings] = await db.query(`
-      SELECT b.*, e.title as event_title, u.name as user_name, u.email as user_email
+      SELECT b.*, e.title as event_title, u.name as user_name, u.email as user_email, COALESCE(t.ticket_number, '') as ticket_number
       FROM bookings b
       JOIN events e ON b.event_id = e.id
       JOIN users u ON b.user_id = u.id
@@ -195,9 +195,27 @@ exports.updateBookingStatus = async (req, res) => {
       return res.status(404).json({ message: 'Booking not found' });
     }
 
+    const updateFields = [];
+    const params = [];
+
+    if (typeof status !== 'undefined') {
+      updateFields.push('status = ?');
+      params.push(status);
+    }
+
+    if (typeof payment_status !== 'undefined') {
+      updateFields.push('payment_status = ?');
+      params.push(payment_status);
+    }
+
+    if (updateFields.length === 0) {
+      return res.status(400).json({ message: 'No update values provided' });
+    }
+
+    params.push(bookingId);
     await db.query(
-      'UPDATE bookings SET status = ?, payment_status = ? WHERE id = ?',
-      [status, payment_status, bookingId]
+      `UPDATE bookings SET ${updateFields.join(', ')} WHERE id = ?`,
+      params
     );
 
     res.json({ message: 'Booking status updated successfully' });
@@ -311,16 +329,16 @@ exports.getDashboardStats = async (req, res) => {
     if (userRole === 'admin') {
       const [totalBookings] = await db.query('SELECT COUNT(*) as count FROM bookings');
       const [totalEvents] = await db.query('SELECT COUNT(*) as count FROM events');
-      const [totalUsers] = await db.query('SELECT COUNT(*) as count FROM users WHERE role = "user"');
+      const [totalUsers] = await db.query('SELECT COUNT(*) as count FROM users');
       const [totalOrganizers] = await db.query('SELECT COUNT(*) as count FROM users WHERE role = "organizer"');
       const [pendingBookings] = await db.query('SELECT COUNT(*) as count FROM bookings WHERE status = "pending"');
       const [confirmedBookings] = await db.query('SELECT COUNT(*) as count FROM bookings WHERE status = "confirmed"');
       const [cancelledBookings] = await db.query('SELECT COUNT(*) as count FROM bookings WHERE status = "cancelled"');
 
       const [totalRevenue] = await db.query(`
-        SELECT COALESCE(SUM(total_amount), 0) as revenue
-        FROM bookings
-        WHERE payment_status = "paid" AND status != "cancelled"
+        SELECT COALESCE(SUM(amount), 0) as revenue
+        FROM payments
+        WHERE status = 'completed'
       `);
 
       const [upcomingEvents] = await db.query('SELECT COUNT(*) as count FROM events WHERE status = "upcoming"');

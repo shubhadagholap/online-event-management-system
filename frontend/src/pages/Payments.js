@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Button, Table, Form, Modal, Alert, Badge } from 'react-bootstrap';
 import { paymentsAPI } from '../services/api';
+import { downloadCSV } from '../utils/csvExport';
 
 const Payments = () => {
   const [payments, setPayments] = useState([]);
@@ -46,10 +47,16 @@ const Payments = () => {
       }
       const list = response.data;
       setPayments(list);
-      // compute summary counts
-      const summary = { total: list.length, completed:0, pending:0, failed:0, refunded:0 };
+      // compute summary counts using normalized status keys
+      const summary = { total: list.length, completed: 0, pending: 0, failed: 0, refunded: 0 };
       list.forEach(p => {
-        if (p.status && summary[p.status] !== undefined) summary[p.status]++;
+        let statusKey = p.status?.toString().toLowerCase().trim();
+        if (statusKey === 'paid') {
+          statusKey = 'completed';
+        }
+        if (statusKey && summary[statusKey] !== undefined) {
+          summary[statusKey]++;
+        }
       });
       setCounts(summary);
     } catch (error) {
@@ -134,7 +141,10 @@ const Payments = () => {
         </Col>
         {userRole === 'admin' && (
           <Col md={3} className="mb-2 text-end">
-            <Button variant="outline-secondary" size="sm" href={paymentsAPI.exportCSV({ search: searchTerm, status: statusFilter })}>
+            <Button variant="outline-secondary" size="sm" onClick={() => {
+              const params = new URLSearchParams({ search: searchTerm, status: statusFilter });
+              downloadCSV(`http://localhost:5000/api/payments/export?${params.toString()}`, 'payments.csv');
+            }}>
               Export CSV
             </Button>
           </Col>
@@ -151,7 +161,6 @@ const Payments = () => {
             <th>Method</th>
             <th>Status</th>
             <th>Date</th>
-            <th>User</th>
             <th>Event</th>
           </tr>
         </thead>
@@ -165,7 +174,6 @@ const Payments = () => {
               <td>{getMethodBadge(p.payment_method)}</td>
               <td>{getStatusBadge(p.status)}</td>
               <td>{new Date(p.payment_date).toLocaleDateString()}</td>
-              <td>{p.user_name}</td>
               <td>{p.event_title}</td>
             </tr>
           ))}

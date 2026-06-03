@@ -11,6 +11,7 @@ const ManageBookings = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [newStatus, setNewStatus] = useState('');
+  const [newPaymentStatus, setNewPaymentStatus] = useState('');
   const [stats, setStats] = useState({
     total: 0,
     confirmed: 0,
@@ -24,8 +25,10 @@ const ManageBookings = () => {
   const { user } = useContext(AuthContext);
 
   useEffect(() => {
-    fetchBookings();
-  }, [user]);
+    if (user) {
+      fetchBookings();
+    }
+  }, [user, searchTerm, statusFilter, paymentFilter]);
 
   const fetchBookings = async () => {
     try {
@@ -70,12 +73,13 @@ const ManageBookings = () => {
   const handleStatusChange = (booking) => {
     setSelectedBooking(booking);
     setNewStatus(booking.status);
+    setNewPaymentStatus(booking.payment_status || 'pending');
     setShowModal(true);
   };
 
   const handleUpdateStatus = async () => {
     try {
-      await bookingsAPI.updateStatus(selectedBooking.id, { status: newStatus });
+      await bookingsAPI.updateStatus(selectedBooking.id, { status: newStatus, payment_status: newPaymentStatus });
       setMessage({ type: 'success', text: 'Booking status updated successfully' });
       setShowModal(false);
       fetchBookings();
@@ -115,6 +119,16 @@ const ManageBookings = () => {
     return <Badge bg={variants[status] || 'secondary'}>{status}</Badge>;
   };
 
+  const filteredBookings = bookings.filter(b => {
+    const normalizedSearch = searchTerm.toLowerCase();
+    const matchesSearch =
+      b.user_name?.toLowerCase().includes(normalizedSearch) ||
+      b.event_title?.toLowerCase().includes(normalizedSearch);
+    const matchesStatus = statusFilter === 'all' || b.status === statusFilter;
+    const matchesPayment = paymentFilter === 'all' || b.payment_status === paymentFilter;
+    return matchesSearch && matchesStatus && matchesPayment;
+  });
+
   if (loading) {
     return <Container className="mt-5 text-center">Loading...</Container>;
   }
@@ -133,7 +147,7 @@ const ManageBookings = () => {
       {/* Stats Cards */}
       <Row className="mb-4">
         <Col md={3}>
-          <Card className="text-center">
+          <Card className="text-center" role="button" onClick={() => setStatusFilter('all')}>
             <Card.Body>
               <h3 className="text-primary">{stats.total}</h3>
               <p className="text-muted mb-0">Total Bookings</p>
@@ -141,7 +155,7 @@ const ManageBookings = () => {
           </Card>
         </Col>
         <Col md={3}>
-          <Card className="text-center">
+          <Card className="text-center" role="button" onClick={() => setStatusFilter('confirmed')}>
             <Card.Body>
               <h3 className="text-success">{stats.confirmed}</h3>
               <p className="text-muted mb-0">Confirmed</p>
@@ -149,7 +163,7 @@ const ManageBookings = () => {
           </Card>
         </Col>
         <Col md={3}>
-          <Card className="text-center">
+          <Card className="text-center" role="button" onClick={() => setStatusFilter('pending')}>
             <Card.Body>
               <h3 className="text-warning">{stats.pending}</h3>
               <p className="text-muted mb-0">Pending</p>
@@ -157,12 +171,41 @@ const ManageBookings = () => {
           </Card>
         </Col>
         <Col md={3}>
+          <Card className="text-center" role="button" onClick={() => setStatusFilter('cancelled')}>
+            <Card.Body>
+              <h3 className="text-danger">{stats.cancelled}</h3>
+              <p className="text-muted mb-0">Cancelled</p>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+      <Row className="mb-4">
+        <Col md={3}>
           <Card className="text-center">
             <Card.Body>
               <h3 className="text-success">₹{stats.revenue.toFixed(2)}</h3>
               <p className="text-muted mb-0">Revenue</p>
             </Card.Body>
           </Card>
+        </Col>
+      </Row>
+
+      {/* status tabs */}
+      <Row className="mb-3">
+        <Col>
+          <div className="tab-button-row">
+            {['all', 'confirmed', 'pending', 'cancelled'].map((status) => (
+              <Button
+                key={status}
+                variant={statusFilter === status ? 'primary' : 'outline-primary'}
+                size="sm"
+                onClick={() => setStatusFilter(status)}
+                className="tab-button"
+              >
+                {status === 'all' ? 'All' : status.charAt(0).toUpperCase() + status.slice(1)}
+              </Button>
+            ))}
+          </div>
         </Col>
       </Row>
 
@@ -214,7 +257,7 @@ const ManageBookings = () => {
         </Col>
       </Row>
 
-      {bookings.length > 0 ? (
+      {filteredBookings.length > 0 ? (
         <Table responsive striped bordered hover>
           <thead>
             <tr>
@@ -231,16 +274,7 @@ const ManageBookings = () => {
             </tr>
           </thead>
           <tbody>
-            {bookings
-            .filter(b => {
-              const matchesSearch =
-                b.user_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                b.event_title.toLowerCase().includes(searchTerm.toLowerCase());
-              const matchesStatus = statusFilter === 'all' || b.status === statusFilter;
-              const matchesPayment = paymentFilter === 'all' || b.payment_status === paymentFilter;
-              return matchesSearch && matchesStatus && matchesPayment;
-            })
-            .map((booking) => (
+            {filteredBookings.map((booking) => (
               <tr key={booking.id}>
                 <td>{booking.ticket_number || 'N/A'}</td>
                 <td>
@@ -301,6 +335,17 @@ const ManageBookings = () => {
                   <option value="pending">Pending</option>
                   <option value="confirmed">Confirmed</option>
                   <option value="cancelled">Cancelled</option>
+                </Form.Select>
+              </Form.Group>
+              <Form.Group className="mt-3">
+                <Form.Label>Payment Status</Form.Label>
+                <Form.Select
+                  value={newPaymentStatus}
+                  onChange={(e) => setNewPaymentStatus(e.target.value)}
+                >
+                  <option value="pending">Pending</option>
+                  <option value="paid">Paid</option>
+                  <option value="refunded">Refunded</option>
                 </Form.Select>
               </Form.Group>
             </>
