@@ -51,7 +51,7 @@ const Categories = () => {
       'Music': '🎵',
       'Sports': '⚽',
       'Technology': '💻',
-      'Business': '📅',
+      'Business': '🏢',
       'Arts': '🎨',
       'Education': '📚',
       'Food': '🍔',
