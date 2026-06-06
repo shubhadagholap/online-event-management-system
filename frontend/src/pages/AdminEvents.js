@@ -478,7 +478,7 @@ const AdminEvents = () => {
                         alt="Event preview" 
                         style={{ width: '100%', height: '200px', objectFit: 'cover' }}
                         onError={(e) => {
-                          e.target.src = '/images/events/default-event.jpg';
+                          e.target.src = '/images/events/default-event.svg';
                           e.target.onerror = null;
                         }}
                       />

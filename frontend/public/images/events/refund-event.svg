@@ -1,0 +1,11 @@
+<svg width="800" height="600" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="refundEventTitle refundEventDesc">
+  <title id="refundEventTitle">Refund event image</title>
+  <desc id="refundEventDesc">Event cancelled symbol with refund style.</desc>
+  <rect width="800" height="600" rx="24" fill="#f8d7da" />
+  <rect x="80" y="120" width="640" height="320" rx="20" fill="#f5c2c7" />
+  <path d="M260 300h280a80 80 0 0 1 0 160H260a80 80 0 0 1 0-160z" fill="#fff5f5" />
+  <path d="M335 360h130v30H335zM335 405h130v30H335z" fill="#d63384" />
+  <path d="M380 220c22 0 40 18 40 40s-18 40-40 40-40-18-40-40 18-40 40-40z" fill="#d63384" />
+  <path d="M380 230a10 10 0 0 1 10 10v30h15a10 10 0 0 1 0 20h-25a10 10 0 0 1-10-10V240a10 10 0 0 1 10-10z" fill="#fff" />
+  <text x="400" y="520" text-anchor="middle" font-family="Arial, sans-serif" font-size="36" fill="#842029">Cancelled / Refund</text>
+</svg>

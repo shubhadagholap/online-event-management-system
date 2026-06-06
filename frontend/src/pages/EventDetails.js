@@ -62,10 +62,29 @@ const EventDetails = () => {
     });
   };
 
+  const getStatusVariant = (status) => {
+    switch (status) {
+      case 'upcoming':
+        return 'success';
+      case 'ongoing':
+        return 'info';
+      case 'completed':
+        return 'secondary';
+      case 'cancelled':
+        return 'danger';
+      default:
+        return 'secondary';
+    }
+  };
+
   // Get image source with fallback logic
   const getImageSrc = () => {
+    if (event?.status === 'cancelled') {
+      return '/images/events/refund-event.svg';
+    }
+
     if (imageError) {
-      return '/images/events/default-event.jpg';
+      return '/images/events/default-event.svg';
     }
     
     if (event?.image_url) {
@@ -78,7 +97,7 @@ const EventDetails = () => {
     }
     
     // Default fallback
-    return '/images/events/default-event.jpg';
+    return '/images/events/default-event.svg';
   };
 
   const handleImageError = () => {
@@ -112,10 +131,15 @@ const EventDetails = () => {
                 {event.category_name && (
                   <Badge bg="primary" className="me-2">{event.category_name}</Badge>
                 )}
-                <Badge bg={event.status === 'upcoming' ? 'success' : 'secondary'}>
+                <Badge bg={getStatusVariant(event.status)}>
                   {event.status}
                 </Badge>
               </div>
+              {event.status === 'cancelled' && (
+                <Alert variant="danger" className="mt-3">
+                  This event has been cancelled. Refunds will be handled automatically.
+                </Alert>
+              )}
               <h2>{event.title}</h2>
               <p className="text-muted">
                 <strong>Organized by:</strong> {event.organizer_name}

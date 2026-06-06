@@ -32,15 +32,18 @@ const OrganizerDashboard = () => {
     try {
       const response = await analyticsAPI.getOrganizerAnalytics();
       const data = response.data || {};
+      
+      console.log('Analytics API Response:', data); // Debug log
+      
       setStats({
-        myEvents: data.myEvents?.total_events || data.myEvents || 0,
-        totalBookings: data.myBookings?.total_bookings || data.myBookings || 0,
-        totalRevenue: parseFloat(data.myRevenue?.total_revenue || data.myRevenue?.revenue || data.myRevenue) || 0,
+        myEvents: data.myEvents?.total_events || 0,
+        totalBookings: data.myBookings?.total_bookings || 0,
+        totalRevenue: parseFloat(data.myRevenue?.total_revenue || 0),
         pendingBookings: data.myBookings?.pending || 0,
         confirmedBookings: data.myBookings?.confirmed || 0,
         cancelledBookings: data.myBookings?.cancelled || 0,
-        upcomingEvents: data.eventAnalytics ? data.eventAnalytics.filter(e => e.status === 'upcoming').length : 0,
-        completedEvents: data.eventAnalytics ? data.eventAnalytics.filter(e => e.status === 'completed').length : 0
+        upcomingEvents: data.myEvents?.upcoming || 0,
+        completedEvents: data.myEvents?.completed || 0
       });
       setLoading(false);
     } catch (error) {

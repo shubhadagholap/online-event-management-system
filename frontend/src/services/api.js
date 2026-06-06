@@ -89,6 +89,7 @@ export const bookingsAPI = {
   create: (data) => api.post('/bookings', data),
   updateStatus: (id, data) => api.put(`/bookings/${id}/status`, data),
   cancel: (id) => api.delete(`/bookings/${id}/cancel`),
+  exportCSV: (params) => `${API_URL}/bookings/export?${new URLSearchParams(params || {}).toString()}`,
 };
 
 // Payments API
@@ -142,4 +143,12 @@ export const analyticsAPI = {
   getReports: () => api.get('/analytics/reports'),
   getMonthlyRevenue: () => api.get('/analytics/revenue/monthly'),
   getRevenueByPaymentMethod: () => api.get('/analytics/revenue/by-method'),
+};
+
+// QR Code API
+export const qrAPI = {
+  generatePaymentQR: (data) => api.post('/qr/payment/generate', data),
+  getPaymentReceiptQR: (paymentId) => api.get(`/qr/payment/receipt/${paymentId}`),
+  generateBulkPaymentQR: (data) => api.post('/qr/payment/bulk', data),
+  getTransactionQR: (transactionId) => api.get(`/qr/transaction/${transactionId}`),
 };

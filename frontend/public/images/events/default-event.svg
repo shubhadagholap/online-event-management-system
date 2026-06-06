@@ -1,0 +1,9 @@
+<svg width="800" height="600" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="defaultEventTitle defaultEventDesc">
+  <title id="defaultEventTitle">Default event image</title>
+  <desc id="defaultEventDesc">Placeholder image for events without a custom image.</desc>
+  <rect width="800" height="600" rx="24" fill="#e9ecef" />
+  <rect x="80" y="120" width="640" height="320" rx="20" fill="#dee2e6" />
+  <path d="M200 220h400v20H200zM200 260h320v20H200zM200 300h200v20H200z" fill="#adb5bd" />
+  <circle cx="630" cy="180" r="64" fill="#ced4da" />
+  <text x="400" y="520" text-anchor="middle" font-family="Arial, sans-serif" font-size="32" fill="#6c757d">No image available</text>
+</svg>

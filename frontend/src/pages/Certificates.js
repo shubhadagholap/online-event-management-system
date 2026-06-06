@@ -198,7 +198,6 @@ const Certificates = () => {
                 <thead className="table-light">
                   <tr>
                     <th>Certificate #</th>
-                    <th>Participant</th>
                     <th>Event</th>
                     <th>Issued</th>
                     <th>Status</th>
@@ -208,7 +207,6 @@ const Certificates = () => {
                   {certificates.map(cert => (
                     <tr key={cert.id}>
                       <td><small>{cert.certificate_number}</small></td>
-                      <td>{cert.user_name}</td>
                       <td>{cert.event_title}</td>
                       <td>{new Date(cert.issued_at).toLocaleDateString()}</td>
                       <td>

@@ -66,10 +66,13 @@ exports.getUserBookings = async (req, res) => {
 exports.getOrganizerBookings = async (req, res) => {
   try {
     const [bookings] = await db.query(`
-      SELECT b.*, e.title as event_title, u.name as user_name, u.email as user_email, COALESCE(t.ticket_number, '') as ticket_number
+      SELECT b.*, e.title as event_title, e.date as event_date, 
+             u.name as user_name, u.email as user_email, 
+             COALESCE(t.ticket_number, '') as ticket_number
       FROM bookings b
       JOIN events e ON b.event_id = e.id
       JOIN users u ON b.user_id = u.id
+      LEFT JOIN tickets t ON b.id = t.booking_id
       WHERE e.organizer_id = ?
       ORDER BY b.booking_date DESC
     `, [req.user.id]);
@@ -278,8 +281,8 @@ exports.exportBookingsCSV = async (req, res) => {
   try {
     const { search, status, payment } = req.query;
     let query = `
-      SELECT b.id, b.booking_date, b.status, b.payment_status, b.total_amount,
-             e.title as event_title, e.date as event_date,
+      SELECT b.id as booking_id, b.event_id, b.booking_date, b.status, b.payment_status, b.total_amount,
+             e.id as event_id, e.title as event_title, e.date as event_date,
              u.name as user_name, u.email as user_email
       FROM bookings b
       JOIN events e ON b.event_id = e.id
@@ -304,8 +307,8 @@ exports.exportBookingsCSV = async (req, res) => {
     query += ' ORDER BY b.booking_date DESC';
     const [rows] = await db.query(query, params);
 
-    const header = 'BookingID,Date,Status,Payment,Amount,Event,EventDate,User,UserEmail\n';
-    const csvRows = rows.map(r => [r.id, r.booking_date, r.status, r.payment_status, r.total_amount, r.event_title, r.event_date, r.user_name, r.user_email]
+    const header = 'BookingID,EventID,Date,Status,Payment,Amount,Event,EventDate,User,UserEmail\n';
+    const csvRows = rows.map(r => [r.booking_id, r.event_id, r.booking_date, r.status, r.payment_status, r.total_amount, r.event_title, r.event_date, r.user_name, r.user_email]
       .map(v => `"${v}"`).join(',')).join('\n');
 
     res.setHeader('Content-Disposition', 'attachment; filename=bookings.csv');

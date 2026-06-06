@@ -20,8 +20,11 @@ const Feedback = () => {
 
   useEffect(() => {
     checkUserRole();
+  }, []);
+
+  useEffect(() => {
     fetchFeedback();
-  }, [activeTab]);
+  }, [activeTab, userRole]);
 
   const checkUserRole = () => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -38,8 +41,12 @@ const Feedback = () => {
   const fetchFeedback = async () => {
     try {
       setLoading(true);
-      if (userRole === 'organizer' && activeTab === 'organizer') {
+      console.log(`Fetching feedback - UserRole: ${userRole}, ActiveTab: ${activeTab}`); // Debug log
+      
+      if ((userRole === 'organizer' || userRole === 'admin') && activeTab === 'organizer') {
+        console.log('Calling getOrganizerFeedback API...'); // Debug log
         const response = await feedbackAPI.getOrganizerFeedback();
+        console.log(`Received ${response.data.length} feedback entries`); // Debug log
         setOrganizerFeedback(response.data);
       } else if (activeTab === 'my-feedback') {
         const response = await feedbackAPI.getMyFeedback();
