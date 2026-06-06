@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Button, Table, Form, Modal, Alert, Badge } from 'react-bootstrap';
-import { paymentsAPI } from '../services/api';
+import { paymentsAPI, qrAPI } from '../services/api';
 import { downloadCSV } from '../utils/csvExport';
 
 const Payments = () => {
@@ -21,6 +21,9 @@ const Payments = () => {
   });
   const [submitting, setSubmitting] = useState(false);
   const [counts, setCounts] = useState({ total: 0, completed: 0, pending: 0, failed: 0, refunded: 0 });
+  const [showQRModal, setShowQRModal] = useState(false);
+  const [qrCodeData, setQrCodeData] = useState(null);
+  const [generatingQR, setGeneratingQR] = useState(false);
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -36,7 +39,8 @@ const Payments = () => {
       setLoading(true);
       const params = {
         search: searchTerm,
-        status: statusFilter !== 'all' ? statusFilter : undefined
+        status: statusFilter !== 'all' ? statusFilter : undefined,
+        _t: Date.now() // Cache-busting timestamp
       };
       let response;
       if (userRole === 'admin') {
@@ -47,6 +51,7 @@ const Payments = () => {
       }
       const list = response.data;
       setPayments(list);
+      
       // compute summary counts using normalized status keys
       const summary = { total: list.length, completed: 0, pending: 0, failed: 0, refunded: 0 };
       list.forEach(p => {
@@ -58,6 +63,7 @@ const Payments = () => {
           summary[statusKey]++;
         }
       });
+      
       setCounts(summary);
     } catch (error) {
       console.error('Error fetching payments:', error);
@@ -83,6 +89,57 @@ const Payments = () => {
       setMessage({ type: 'danger', text: msg });
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const generatePaymentQR = async () => {
+    if (!newPayment.amount || !newPayment.booking_id || !newPayment.event_id) {
+      setMessage({ type: 'warning', text: 'Please fill in Booking ID, Event ID, and Amount to generate QR code' });
+      return;
+    }
+
+    setGeneratingQR(true);
+    try {
+      const response = await qrAPI.generatePaymentQR({
+        amount: newPayment.amount,
+        bookingId: newPayment.booking_id,
+        eventId: newPayment.event_id,
+        payerName: newPayment.payer_name || '',
+        upiId: newPayment.upi_id || ''
+      });
+
+      setQrCodeData(response.data);
+      setShowQRModal(true);
+    } catch (error) {
+      console.error('QR generation error:', error);
+      setMessage({ type: 'danger', text: 'Failed to generate QR code' });
+    } finally {
+      setGeneratingQR(false);
+    }
+  };
+
+  const generateTransactionQR = async (transactionId) => {
+    setGeneratingQR(true);
+    try {
+      const response = await qrAPI.getTransactionQR(transactionId);
+      
+      // Adapt the response format for the modal
+      setQrCodeData({
+        qrCode: response.data.qrCode,
+        upiUrl: response.data.verificationUrl,
+        paymentDetails: {
+          merchant: 'Transaction Verification',
+          amount: response.data.transaction.amount,
+          currency: 'INR',
+          description: `Transaction: ${transactionId}`
+        }
+      });
+      setShowQRModal(true);
+    } catch (error) {
+      console.error('Transaction QR generation error:', error);
+      setMessage({ type: 'danger', text: 'Failed to generate transaction QR code' });
+    } finally {
+      setGeneratingQR(false);
     }
   };
 
@@ -162,6 +219,7 @@ const Payments = () => {
             <th>Status</th>
             <th>Date</th>
             <th>Event</th>
+            <th>QR</th>
           </tr>
         </thead>
         <tbody>
@@ -175,6 +233,16 @@ const Payments = () => {
               <td>{getStatusBadge(p.status)}</td>
               <td>{new Date(p.payment_date).toLocaleDateString()}</td>
               <td>{p.event_title}</td>
+              <td>
+                <Button 
+                  variant="outline-info" 
+                  size="sm"
+                  onClick={() => generateTransactionQR(p.transaction_id)}
+                  title="Generate QR for transaction verification"
+                >
+                  📱
+                </Button>
+              </td>
             </tr>
           ))}
         </tbody>
@@ -217,7 +285,75 @@ const Payments = () => {
             <Button variant="primary" type="submit" className="w-100" disabled={submitting}>
               {submitting ? 'Processing...' : 'Process Payment'}
             </Button>
+            <div className="mt-3 d-grid gap-2">
+              <Button 
+                variant="outline-info" 
+                onClick={generatePaymentQR} 
+                disabled={generatingQR || !newPayment.amount || !newPayment.booking_id}
+              >
+                {generatingQR ? 'Generating QR...' : '📱 Generate QR Code for UPI Payment'}
+              </Button>
+            </div>
           </Form>
+        </Modal.Body>
+      </Modal>
+
+      {/* QR Code Modal */}
+      <Modal show={showQRModal} onHide={() => setShowQRModal(false)} size="lg" centered>
+        <Modal.Header closeButton>
+          <Modal.Title>📱 UPI Payment QR Code</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="text-center">
+          {qrCodeData && (
+            <>
+              <div className="mb-3">
+                <img 
+                  src={qrCodeData.qrCode} 
+                  alt="Payment QR Code" 
+                  style={{ maxWidth: '300px', height: 'auto', border: '2px solid #dee2e6' }}
+                  className="rounded"
+                />
+              </div>
+              
+              <Card className="mb-3">
+                <Card.Body>
+                  <h5 className="card-title text-primary">Payment Details</h5>
+                  <Row>
+                    <Col md={6}>
+                      <p><strong>Merchant:</strong> {qrCodeData.paymentDetails.merchant}</p>
+                      <p><strong>Amount:</strong> ₹{qrCodeData.paymentDetails.amount}</p>
+                    </Col>
+                    <Col md={6}>
+                      <p><strong>Currency:</strong> {qrCodeData.paymentDetails.currency}</p>
+                      <p><strong>Description:</strong> {qrCodeData.paymentDetails.description}</p>
+                    </Col>
+                  </Row>
+                </Card.Body>
+              </Card>
+
+              <Alert variant="info" className="text-start">
+                <h6><i className="fas fa-info-circle"></i> How to Pay:</h6>
+                <ol className="mb-0">
+                  <li>Open any UPI app (Google Pay, PhonePe, Paytm, etc.)</li>
+                  <li>Scan this QR code using the app's scanner</li>
+                  <li>Verify the payment details</li>
+                  <li>Enter your UPI PIN to complete payment</li>
+                </ol>
+              </Alert>
+
+              <div className="d-grid gap-2">
+                <Button 
+                  variant="success" 
+                  onClick={() => {
+                    navigator.clipboard.writeText(qrCodeData.upiUrl);
+                    setMessage({ type: 'success', text: 'UPI payment link copied to clipboard!' });
+                  }}
+                >
+                  📋 Copy UPI Payment Link
+                </Button>
+              </div>
+            </>
+          )}
         </Modal.Body>
       </Modal>
     </Container>

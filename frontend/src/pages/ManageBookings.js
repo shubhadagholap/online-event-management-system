@@ -64,8 +64,8 @@ const ManageBookings = () => {
       pending: bookingsData.filter(b => b.status === 'pending').length,
       cancelled: bookingsData.filter(b => b.status === 'cancelled').length,
       revenue: bookingsData
-        .filter(b => b.payment_status === 'paid')
-        .reduce((sum, b) => sum + parseFloat(b.total_amount), 0)
+        .filter(b => b.status === 'confirmed' && b.payment_status === 'paid') // Match analytics: confirmed AND paid
+        .reduce((sum, b) => sum + parseFloat(b.total_amount || 0), 0)
     };
     setStats(stats);
   };

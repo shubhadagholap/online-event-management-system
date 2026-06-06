@@ -65,9 +65,14 @@ exports.getOrganizerAnalytics = async (req, res) => {
   try {
     const organizer_id = req.user.id;
 
-    // Total events
+    // Total events with status breakdown
     const [myEvents] = await db.query(
-      `SELECT COUNT(*) as total_events FROM events WHERE organizer_id = ?`,
+      `SELECT COUNT(*) as total_events,
+        SUM(CASE WHEN status = 'upcoming' OR (status IS NULL AND date > NOW()) THEN 1 ELSE 0 END) as upcoming,
+        SUM(CASE WHEN status = 'ongoing' OR (status IS NULL AND DATE(date) = CURDATE()) THEN 1 ELSE 0 END) as ongoing,
+        SUM(CASE WHEN status = 'completed' OR (status IS NULL AND date < NOW() AND DATE(date) != CURDATE()) THEN 1 ELSE 0 END) as completed,
+        SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) as cancelled
+      FROM events WHERE organizer_id = ?`,
       [organizer_id]
     );
 
@@ -85,26 +90,27 @@ exports.getOrganizerAnalytics = async (req, res) => {
 
     // Total revenue
     const [myRevenue] = await db.query(
-      `SELECT COALESCE(SUM(p.amount), 0) as total_revenue FROM payments p
-      JOIN bookings b ON p.booking_id = b.id
+      `SELECT COALESCE(SUM(b.total_amount), 0) as total_revenue FROM bookings b
       JOIN events e ON b.event_id = e.id
-      WHERE e.organizer_id = ? AND p.status = 'completed'`,
+      WHERE e.organizer_id = ? AND b.status = 'confirmed' AND b.payment_status = 'paid'`,
       [organizer_id]
     );
 
-    // Event-wise analytics
+    // Event-wise analytics with correct feedback table
     const [eventAnalytics] = await db.query(
-      `SELECT e.id, e.title, e.date,
+      `SELECT e.id, e.title, e.date, e.status,
         COUNT(DISTINCT b.id) as booking_count,
         SUM(CASE WHEN b.status = 'confirmed' THEN 1 ELSE 0 END) as confirmed_bookings,
-        SUM(p.amount) as revenue,
-        AVG(f.rating) as average_rating
+        SUM(CASE WHEN b.status = 'pending' THEN 1 ELSE 0 END) as pending_bookings,
+        SUM(CASE WHEN b.status = 'cancelled' THEN 1 ELSE 0 END) as cancelled_bookings,
+        COALESCE(SUM(CASE WHEN b.status = 'confirmed' AND b.payment_status = 'paid' THEN b.total_amount ELSE 0 END), 0) as revenue,
+        AVG(f.rating) as average_rating,
+        COUNT(DISTINCT f.id) as feedback_count
       FROM events e
       LEFT JOIN bookings b ON e.id = b.event_id
-      LEFT JOIN payments p ON b.id = p.booking_id AND p.status = 'completed'
       LEFT JOIN feedback f ON e.id = f.event_id
       WHERE e.organizer_id = ?
-      GROUP BY e.id, e.title, e.date
+      GROUP BY e.id, e.title, e.date, e.status
       ORDER BY e.date DESC`,
       [organizer_id]
     );
@@ -163,9 +169,9 @@ exports.getEventAnalytics = async (req, res) => {
       LEFT JOIN poll_responses pr ON ep.id = pr.poll_id
       WHERE ep.event_id = ?
       UNION ALL
-      SELECT 'feedback' as type, COUNT(ef.id) as count
-      FROM event_feedback ef
-      WHERE ef.event_id = ?`,
+      SELECT 'feedback' as type, COUNT(f.id) as count
+      FROM feedback f
+      WHERE f.event_id = ?`,
       [eventId, eventId]
     );
 
@@ -425,11 +431,11 @@ exports.exportAnalyticsData = async (req, res) => {
 
     const [feedback] = await db.query(`
       SELECT 
-        ef.*,
+        f.*,
         u.name as user_name
-      FROM event_feedback ef
-      JOIN users u ON ef.user_id = u.id
-      WHERE ef.event_id = ?
+      FROM feedback f
+      JOIN users u ON f.user_id = u.id
+      WHERE f.event_id = ?
     `, [eventId]);
 
     const analyticsData = {

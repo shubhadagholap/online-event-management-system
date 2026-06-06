@@ -115,16 +115,20 @@ exports.getUserFeedback = async (req, res) => {
 // Organizer can view all feedback for their events
 exports.getOrganizerFeedback = async (req, res) => {
   try {
-    const organizer_id = req.user.id;
-
-    const [feedbacks] = await db.query(
-      `SELECT f.*, e.title as event_title, u.name as user_name FROM feedback f
+    const isAdmin = req.user.role === 'admin';
+    let query = `SELECT f.*, e.title as event_title, u.name as user_name FROM feedback f
        JOIN events e ON f.event_id = e.id
-       JOIN users u ON f.user_id = u.id
-       WHERE e.organizer_id = ?
-       ORDER BY f.created_at DESC`,
-      [organizer_id]
-    );
+       JOIN users u ON f.user_id = u.id`;
+    const params = [];
+
+    if (!isAdmin) {
+      query += ` WHERE e.organizer_id = ?`;
+      params.push(req.user.id);
+    }
+
+    query += ` ORDER BY f.created_at DESC`;
+
+    const [feedbacks] = await db.query(query, params);
 
     res.json(feedbacks);
   } catch (error) {
@@ -136,19 +140,23 @@ exports.getOrganizerFeedback = async (req, res) => {
 // Get organizer's event ratings summary
 exports.getOrganizerRatings = async (req, res) => {
   try {
-    const organizer_id = req.user.id;
-
-    const [ratings] = await db.query(
-      `SELECT e.id, e.title,
+    const isAdmin = req.user.role === 'admin';
+    let query = `SELECT e.id, e.title,
         COUNT(f.id) as total_ratings,
         AVG(f.rating) as average_rating
       FROM events e
-      LEFT JOIN feedback f ON e.id = f.event_id
-      WHERE e.organizer_id = ?
-      GROUP BY e.id, e.title
-      ORDER BY average_rating DESC`,
-      [organizer_id]
-    );
+      LEFT JOIN feedback f ON e.id = f.event_id`;
+    const params = [];
+
+    if (!isAdmin) {
+      query += ` WHERE e.organizer_id = ?`;
+      params.push(req.user.id);
+    }
+
+    query += ` GROUP BY e.id, e.title
+      ORDER BY average_rating DESC`;
+
+    const [ratings] = await db.query(query, params);
 
     res.json(ratings);
   } catch (error) {

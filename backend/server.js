@@ -34,6 +34,7 @@ app.use('/api/payments', require('./routes/paymentRoutes'));
 app.use('/api/notifications', require('./routes/notificationRoutes'));
 app.use('/api/feedback', require('./routes/feedbackRoutes'));
 app.use('/api/certificates', require('./routes/certificateRoutes'));
+app.use('/api/qr', require('./routes/qrRoutes'));
 
 // Health check
 app.get('/api/health', (req, res) => {
